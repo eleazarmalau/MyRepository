@@ -4,4 +4,9 @@ NPM : 2506623963
 
 Kelas : PBP A
 
-Teman Kelas: Putra
+### Assignment 1
+1. 
+2. 
+3. 
+
+AI Disclosure:
