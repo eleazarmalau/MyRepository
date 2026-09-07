@@ -16,7 +16,7 @@
             <nav>
                 <a href="#profile">Profile</a>
                 <a href="#experiences">Experiences</a>
-                <a href="#experiences">Education</a>
+                <a href="#education">Education</a>
             </nav>
         </div>
     </header>
@@ -30,7 +30,7 @@
                 </div>
                 <div class="hero-photo">
                     <div class="photo-block"></div>
-                    <img class="avatar" src="/static/img/hachiwareganteng.webp" alt="Photo of Hachiware">
+                    <img class="avatar" src="/static/img/IMG_0011.png" alt="Photo of Me">
                 </div>
                 <div class="hero-details">
                     <p class="bio">A third year Information System student at University of Indonesia with a passionate interest in making the world a much more happier place.
@@ -53,16 +53,16 @@
                     </div>
                 </div>
             </div>
-            <br>
         </section>
-        
+
         <section 
         class = "experiences-section"
         id = "experiences"
+        aria-labelledby="experience-title"
         >
-            <div class = "containter">
+            <div class = "container">
                 <div class = "section-heading">
-                    <p class = "seciton-kicker">What I've done</p>
+                    <p class = "section-kicker">What I've Done</p>
                     <h2 id = "experience-title">Experiences</h2>
                     <p>Activities, collaborations, and opportunities to grow</p>
                 </div>
@@ -106,13 +106,14 @@
                             <li>Leadership</li>
                             <li>Python</li>
                         </ul>
+                        </article>
                         <article class = "resume-card experience-card">
                         <div class = "card-heading">
                             <div>
-                            <h3>Teaching Assistang</h3>
+                            <h3>Teaching Assistant</h3>
                             <p class = "institution">Faculty of Computer Science, University of Indonesia</p>
                             </div>
-                            <p class = "period">August 2026- Present</p>
+                            <p class = "period">August 2026 - Present</p>
                         </div>
                         <p class = "card-description">Teaching Assistant of Communication, Business, and Technical</p>
                         <ul class = "achievement-list">
@@ -135,23 +136,53 @@
         aria labelledby = "edication-title"
         >
             <div class = "container">
-                <div class = "heading">
-                    <p class = "seciton-kicker">Where I learn</p>
+                <div class = "section-heading">
+                    <p class = "section-kicker">Where I learn</p>
                     <h2 id ="education-title">Education</h2>
                     <p>My academic background</p>
                 </div>
                 <article class ="resume-card education-card">
-                    <div class = "card-heading">
-                        <div>
-                            <h3>University of Indonesia</h3>
-                            <p class = "Institution">S1 Information System</p>
+                    <img
+                            class="institution-logo"
+                            src="/static/img/logo-UI.png"
+                            alt="Universitas Indonesia logo"
+                            width="88"
+                            height="88"
+                            >
+                    <div class="education-content">
+                        <div class = "card-heading">
+                            <div>
+                                <h3>University of Indonesia</h3>
+                                <p class = "Institution">S1 Information System</p>
+                            </div>
+                            <p class="period">2025 - Present</p>
                         </div>
-                        <p class="period">2025 - Present</p>
+                        <p class = "card-description">Faculty of Computer Science</p>
+                        <ul class = "achievement-list">
+                            <li>GPA = 3.59</li>
+                        </ul>
                     </div>
-                    <p class = "card-description">Faculty of Computer Science</p>
-                    <ul class = "achievement-list">
-                        <li>GPA = 3.59</li>
-                    </ul>
+                    <img
+                            class="institution-logo"
+                            src="/static/img/Emblem_of_Canisius_College.svg"
+                            alt="Kolese Kanisius logo"
+                            width="88"
+                            height="88"
+                            >
+                    <div class="education-content">
+                        <div class = "card-heading">
+                            <div>
+                                <h3>Canisius College</h3>
+                                <p class = "Institution">High School</p>
+                            </div>
+                            <p class="period">2022 - 2025</p>
+                        </div>
+                        <p class = "card-description">High School Student</p>
+                        <ul class = "achievement-list">
+                            <li>Final Grade = 89.31</li>
+                            <li>Activites and Organizations: Anak Desain Kanisius, CC Cup, Ragamuda</li>
+                        </ul>
+                    </div>
                 </article>
             </div>
         </section>
