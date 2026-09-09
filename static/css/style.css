@@ -435,6 +435,15 @@ a:focus-visible{
     font-weight: 600;
 }
 
+.experience-thumbnail {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+}
+
 /* Apply movement only on devices that support hover */
 @media (hover: hover) {
     .resume-card:hover {
