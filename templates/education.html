@@ -26,14 +26,27 @@
         <div class="container">
             <div class = "section-heading">
                 <p class="section-kicker">My journey so far</p>
-                <h1>Education</h1>
+                <h2 id="education-title">Education</h2>
                 <p>My academic journey, from what I am studying now to where it began.</p>
             </div>
-            <ol class = "education-timeline">
+            <ol class="education-timeline">
                 {% for education in education_list %}
-                <li class = "timeline-item{% if not education.end_year%}">
+                <li class="timeline-item{% if not education.end_year %} is-current{% endif %}">
                     <div class="timeline-pin" aria-hidden="true"></div>
                     <article class = "timeline-card">
+                        {% if education.thumbnail%}
+                        <div class = "timeline-card-thumbnail">
+                            <img
+                                class="timeline-logo"
+                                src="{{ education.thumbnail }}"
+                                alt="{{ education.institution }} logo"
+                                width="64"
+                                height="64"
+                                loading="lazy"
+                            >
+                        </div>
+                        {% endif %}
+                        <div class = "timeline-card-content">
                         <div class = "timeline-card-heading">
                             <div>
                                 {% if not education.end_year%}
@@ -48,16 +61,7 @@
                         </div>
 
                         <div class = "timeline-card-body">
-                            {% if education.thumbnail%}
-                            <img
-                                class="timeline-logo"
-                                src="{{ education.thumbnail }}"
-                                alt="{{ education.institution }} logo"
-                                width="64"
-                                height="64"
-                                loading="lazy"
-                            >
-                            {% endif %}
+
                             <div>
                                 <p class = "timeline-major">
                                     {{education.major}}
@@ -65,17 +69,18 @@
                                 {% if education.description_items%}
                                 <ul class = "timeline-details">
                                     {%for item in education.description_items%}
-                                    <li>{%item%}</li>
+                                    <li>{{item}}</li>
                                     {%endfor%}
                                 </ul>
                                 {%endif%}
                             </div>
                         </div>
+                        </div>
                     </article>
                 </li>
                 {% empty %}
                     <li class="empty-state">No education has been added yet.</li>
-                {% endfor %}
+            {% endfor %}
             </ol>
         </div>
     </section>
