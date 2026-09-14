@@ -42,3 +42,62 @@ Git dan Deployment ke PWS:
 
 2. Pengkritisan Terhadap AI
     Terdapat beberapa kondisi dimana AI memberikan sebuah framework atau design yang tidak sesuai dengan keinginan saya seperti menambahkan border untuk logo yang kemudian saya hilangkan saja karena tidak sesuai dengan tampilan yang saya inginkan. Terdapat juga beberapa panduan untuk penggunaan warna yang saya ubah sesuai dengan keinginan saya. 
+
+
+### Assignment 2
+1. Ketika pengguna membuka halaman portofolio baru misalkan education, browser akan mengirimkan HTTP request ke Django. Request tersebut akan dicocokan melalui urls.py yang ada di dalam folder Portfolio di mana di dalam file tersebut ada comand include("main.urls) yang akan melanjutkan proses requestnya ke main/urls.py
+
+Di dalam urls.py dalam main ini akan ada alamat eduaction yang akan membawa lagi ke view show_education yang sudah dibuat. View tersebut akan mengambil data pendidikan dari database dengan model Education yang sudah dibuat dan kemudian data-data tersebut akan dimasukkan ke dalam context dengan nama education_list dan diteruskan ke template education.html dengan fungsi render().
+
+Dalam template education tadi sudah dibuatkan kondisi for loop untuk memasukkan semua data-data yang ada di dalam model Education ini, tetapi kalau tidak adapun tetap akan memuat suatu teks dengan kondisi kalau {%empty%} di mana akan muncul teks "No education has been added yet."
+
+Hasil render tersebutlah yang akan kemudian dikirim sebagai HTML response ke browser dan browser pada akhirnya akan memuat CSS dan gambar yang dirujuk oleh HTML sehingga halaman bisa menunjukkan semua yang sudah dibuat tadi.
+
+2. Data di bagian portfolio ini lebih baik disimpan dalam bentuk model karena akan memudahkan developer untuk memasukkan langsung data-data baru kedepannya dalam bentuk database sederhana daripada menambahkan manual hal-hal baru langsung ke templatenya yang juga pada akhirnya bisa membuat sebuah error pada tampilan akhirnya. 
+
+Selain itu, dalam modelnya sendiri sudah dibuatkan beberapa kondisi unik yang bisa disesuaikan secara manual dalam pengisian databasenya agar bisa mudah dimengerti kedepannya atas fitur-fitur yang sudah diimplementasikan dalam HTMLnya sendiri.
+
+3. Perbedaan dari makemigrations dengan migrate sebenarnya sederhana. Makemigrations sendiri digunakan untuk membuat file migrationnya berdasarkan definisi model yang baru dibandingkan dengan migration sebelumnya. Jadi file baru yang dibuat makemigrations ini akan mencatat perubahan database, tetapi belum diterapkan ke databasenya.
+
+Sementara migrate ini adalah fitur untuk menerapkan migrationnya yang sudah dibuat dalam makemigrations tadi dan hal ini akan mengubah struktur database secara keseluruhan tergantung dengan perubahan yang dibuat.
+
+Contoh perubahan model yang mengharuskan untuk menjalankan kedua perintah ini adalah kalau ada perubahan model dalam main/models.py karena file inilah yang memegang seluruh bentuk database dari webnya. Jadi misalkan ada membuat perubahan ke bagian title, institution, major, thumbnail, ataupun primary key lainnya dalam model education akan membutuhkan developer untuk melakukan dua command makemigrations dan migrate tersebut karena databasenya yang mau diubah bukan tampilan atau data yang dimasukkan ke dalam database tersebut yang diubah.
+
+### AI Disclosure:
+Model yang digunakan adalah Chat GPT-6 Astra dan juga Chat GPT-5.6 Terra
+
+1. Cakupan Penggunaan dan Prompting
+
+Prompt Strategy: Saya menggunakan AI untuk mengimplementasikan ide-ide baru terkait design css untuk web serta tampilan dan layoutnya. Selain itu, saya juga melakukan prompting untuk membantu dalam proses pembuatan unit test serta untuk mengerti pembuatan data-data untuk current database yang available melalui model-model baru yang dibuat. Terakhir saya juga meminta bantuan AI untuk mengerti bentuk-bentuk fitur yang bisa dimasukkan ke dalam model django.
+
+Pengembangan Halaman Education Berbasis Database:
+    Prompt: "I wanna make a new page which is the education page. I want it to appear like a pin list with the left side having a timeline, and the top one is the one that I'm currently doing."
+    Tujuan: Membuat halaman education terpisah yang mengambil data dari model Education, mengurutkan pendidikan yang masih berlangsung di bagian paling atas, serta menampilkan institusi, program studi, periode, logo, dan deskripsi pendidikan secara dinamis.
+
+Pengisian Data Education melalui Django Shell:
+    Prompt: "I wanna add with the shell python thingy, what command do I need to enter to make the same list as the one in the main education section in the index html part?"
+    Tujuan: Memahami cara membuat data Education melalui Django shell dengan Education.objects.get_or_create(), sehingga data University of Indonesia dan Canisius College tidak perlu lagi ditulis secara hard-coded di template.
+
+Perbaikan Query dan Django Template:
+    Prompt: "This part that I highlighted makes an error help me fix please" dan "Invalid block tag on line 76: 'empty', expected 'elif', 'else' or 'endif'."
+    Tujuan: Memperbaiki import query expression Django yang diperlukan untuk pengurutan data, serta memahami susunan tag template {% for %}, {% empty %}, {% if %}, dan {% endif %} agar halaman education dapat dirender tanpa error.
+
+Iterasi Desain CSS Education dan Responsivitas:
+    Prompt: "Make a simpler timeline with hover effects for the text and pin" dan "Add adaptability for other media, like for mobile visibility."
+    Tujuan: Mengembangkan tampilan education melalui beberapa iterasi, mulai dari timeline dengan pin hingga kartu pendidikan terpisah. AI digunakan untuk membantu membuat logo berada di sisi kiri kartu, efek hover, tampilan mobile, fallback untuk perangkat touch, serta dukungan prefers-reduced-motion. Saya tetap mengevaluasi hasil visualnya dan menyesuaikan desain yang tidak sesuai dengan preferensi saya.
+
+Pembersihan CSS yang Tidak Digunakan:
+    Prompt: "Help me delete all the unnecessary CSS designs as I have deleted the experience and education part in the index one."
+    Tujuan: Menghapus selector CSS lama yang hanya digunakan oleh section Experience dan Education pada homepage, tetapi tetap mempertahankan selector yang masih dipakai oleh halaman Profile, Experience, dan Education terpisah.
+
+Pembuatan Unit Test:
+    Prompt: "Add unit tests that verify the URL is accessible, the correct template is used, and model data appears in the HTML response."
+    Tujuan: Menambahkan test untuk halaman Education yang mencakup tiga skenario: URL dapat diakses dan memakai template yang benar, data dari model muncul pada HTML ketika database terisi, dan pesan empty state muncul ketika data Education kosong.
+
+2. Pengkritisan Terhadap AI
+    AI membantu mempercepat pembuatan struktur halaman, query, CSS, dan unit test, tetapi hasil awal desain timeline terlalu kompleks dan tidak sesuai dengan referensi visual yang saya inginkan. Selain itu, beberapa saran CSS dapat menjadi tidak relevan setelah struktur HTML saya berubah. Karena itu, saya meninjau ulang hasilnya secara bertahap, memberi referensi visual, meminta penyederhanaan layout, dan memastikan selector yang diubah benar-benar ada di file CSS saat ini. Saya juga menjalankan unit test dan Django system check untuk memverifikasi bahwa perubahan yang dihasilkan AI tidak merusak halaman yang sudah ada.
+Menambahkan dan merancang model baru untuk education section:
+
+
+
+
