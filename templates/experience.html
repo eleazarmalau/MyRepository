@@ -12,11 +12,11 @@
 <body>
     <header class="site-header">
         <div class="container">
-            <a href="{% url 'main:show_main'}" class="brand">{{name}}</a>
+            <a href="{% url 'main:show_main'%}" class="brand">{{name}}</a>
             <nav>
                 <a href="{% url 'main:show_main'%}">Profile</a>
                 <a href="{% url 'main:show_experience' %}">Experiences</a>
-                <a href="#education">Education</a>
+                <a href="{% url 'main:show_education' %}">Education</a>
             </nav>
         </div>
     </header>
@@ -24,20 +24,27 @@
     <main>
     <section class="experience-section" id="experience">
         <div class="container">
+            <div class = "section-heading">
             <p class="section-kicker">My journey so far</p>
-            <h1>Experience</h1>
-
+            <h2>Experience</h2>
+            <p>Activities, collaborations, and opportunities to grow</p>
+            </div>
             <div class="experience-grid">
                 {% for experience in experience_list %}
                     <article class="experience-card">
+                        <div class ="card-inner">
+                            <div class = "card-back">
                         {% if experience.thumbnail %}
                             <img
                                 class="experience-thumbnail"
                                 src="{{ experience.thumbnail }}"
                                 alt="Work preview for {{ experience.title }}"
+                                width = 88
+                                height = 88
                                 loading="lazy"
                             >
                         {% endif %}
+                        <div class = "experience-content">
                         <span class="experience-category">
                             {{ experience.get_category_display }}
                         </span>
@@ -51,6 +58,28 @@
                         {% else %}
                             <p class="experience-status">Completed</p>
                         {% endif %}
+                        </div>
+                        </div>
+                        <div class = "card-front">
+                            {% if experience.thumbnail %}
+                            <img
+                                class="experience-thumbnail"
+                                src="{{ experience.thumbnail }}"
+                                alt="Work preview for {{ experience.title }}"
+                                width = 88
+                                height = 88
+                                loading="lazy"
+                            >
+                        {% endif %}
+                        <div class = "experience-content-front">
+                        <span class="experience-category">
+                            {{ experience.get_category_display }}
+                        </span>
+                        <h2>{{ experience.title }}</h2>
+                        <h4>{{ experience.organization }}</h4>
+                        </div>
+                        </div>
+                        </div>
                     </article>
                 {% empty %}
                     <p class="empty-state">

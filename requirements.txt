@@ -5,3 +5,32 @@ psycopg2-binary
 requests
 urllib3
 python-dotenv
+
+# from main.models import Experience
+# from django.templatetags.static import static
+# from django.utils import timezone
+
+
+# experience = Experience.objects.create(
+#     title="Mentor",
+#     description="Mentoring team at DDP-0 and teaching python for new students to prepare for DDP-1",
+#     category="part-time",
+#     thumbnail=static("img/logoddp0.png"),
+#     ended_at=timezone.now(),
+# )
+
+# b4feff32-7bc3-40ee-86e4-72afe01c2aca - Kombistek Teaching Assistant
+# eef5f592-c048-4aa2-810d-3c709993a942 - Visual Design Staff
+# 3dc790f8-c5bb-485a-b31e-b35b8430fd18 - Mentor
+
+
+# from main.models import Experience
+# from main.models import Experience
+
+# experience = Experience.objects.get(title="Kombistek Teaching Assistant")
+# experience.place = "Faculty of Computer Science, University of Indonesia"
+# experience.save(update_fields=["place"])
+
+# experience = Experience.objects.get(title="Mentor")
+# experience.place = "Dasar-Dasar Pemrograman 0"
+# experience.save(update_fields=["place"])
