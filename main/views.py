@@ -20,7 +20,15 @@ def show_experience(request):
 def show_education(request):
     context = {
         "name" : "Isybal Sama Eleazar Malau",
-        "education_list" : Education.objects.all(),
+        "education_list" : Education.objects.order_by(
+            Case(
+                When(end_year__isnull=True, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            ),
+            "-start_year",
+            "institution",
+        ),
     }
     return render(request, "education.html", context)
 # Create your views here.
