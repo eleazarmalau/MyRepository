@@ -240,11 +240,6 @@ a:focus-visible{
     outline-offset: 5px;
 }
 
-.resume-section{
-    padding: 4rem 0;
-    border-top: 1px solid var(--line);
-}
-
 .section-heading{
     margin-bottom: 1.5rem;
 }
@@ -267,114 +262,6 @@ a:focus-visible{
 
 .section-heading > p:last-child{
     color: var(--text-muted);
-}
-
-.experience-list{
-    display: grid;
-    gap: 1.5rem;
-}
-
-.resume-card{
-    padding: 1.75rem;
-    background: #fffdf9;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    overflow-wrap: anywhere;
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease,
-        border-color 0.2s ease;
-}
-
-.experience-card{
-    border-left: 4px solid var(--accent);
-}
-
-.card-heading{
-    display:flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75rem 1.5rem;
-    margin-bottom: 1rem;
-}
-
-.card-heading h3{
-    font-family: "Space Grotesk", sans-serif;
-    font-size: 1.25rem;
-    line-height: 1.35;
-}
-
-.institution{
-    color: var(--accent-dark);
-    font-weight: 600;
-    margin-top: 0.3rem;
-}
-
-.period{
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 0.3rem 0.65rem;
-}
-
-.card-description,
-.achivement-list{
-    color: var(--text-muted);
-}
-
-.achievement-list{
-    margin: 0.5rem 0 0;
-    padding-left: 1.25rem;
-}
-
-.achievement-list li + li {
-    margin-top: 0.45rem;
-}
-
-.skill-tags{
-    display:flex;
-    flex-wrap:wrap;
-    gap:0.5rem;
-    list-style:none;
-    margin-top:1.25rem;
-}
-
-.skill-tags li{
-    padding: 0.3rem 0.7rem;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    color: var(--accent-dark);
-    background: var(--paper);
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.education-section {
-    background: #f2ece3;
-}
-
-.education-card {
-    display: grid;
-    grid-template-columns: 88px minmax(0, 1fr);
-    align-items: start;
-    gap: 1.5rem;
-    border-top: 4px solid var(--accent);
-}
-
-.institution-logo {
-    display: block;
-    width: 88px;
-    height: 88px;
-    object-fit: contain;
-    padding: 0.5rem;
-    align-self:center;
-}
-
-.education-content {
-    min-width: 0;
 }
 
 #education {
@@ -692,12 +579,6 @@ a:focus-visible{
         border-color: var(--accent);
         box-shadow: 0 10px 24px rgba(28, 25, 23, 0.12);
     }
-
-    .resume-card:hover {
-        transform: translateY(-4px);
-        border-color: var(--accent);
-        box-shadow: 0 10px 24px rgba(28, 25, 23, 0.08);
-    }
 }
 
 /* Mobile layout */
@@ -712,20 +593,8 @@ a:focus-visible{
         font-size: 1.1rem;
     }
 
-    .resume-section {
-        padding: 4rem 0;
-    }
-
-    .resume-card {
-        padding: 1.25rem;
-    }
-
-    .card-heading {
-        flex-direction: column;
-    }
 }
 
-/* Respect visitors who prefer reduced animation */
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
@@ -733,14 +602,11 @@ a:focus-visible{
 
     .site-header nav a,
     .site-header nav a::after,
-    .resume-card,
     .experience-card,
-    .card-inner {
+    .card-inner,
+    .timeline-card,
+    .timeline-pin {
         transition: none;
-    }
-
-    .resume-card:hover {
-        transform: none;
     }
 
     .experience-card:hover .card-inner {
@@ -751,17 +617,10 @@ a:focus-visible{
         transform: none;
         box-shadow: none;
     }
-}
 
-@media (max-width: 600px) {
-    .education-card {
-        grid-template-columns: 56px minmax(0, 1fr);
-        gap: 1.5rem 1rem;
-    }
-
-    .institution-logo {
-        width: 56px;
-        height: 56px;
+    .timeline-card:hover {
+        transform: none;
+        box-shadow: none;
     }
 }
 
@@ -771,31 +630,100 @@ a:focus-visible{
     }
 
     .education-timeline {
-        padding-left: 2rem;
+        padding-left: 1.75rem;
     }
 
     .education-timeline::before {
-        left: 0.4rem;
+        left: 0.35rem;
     }
 
     .timeline-item {
-        padding-bottom: 2.5rem;
+        padding-bottom: 1.5rem;
     }
 
     .timeline-pin {
-        left: -2rem;
+        left: -1.7rem;
+    }
+
+    .timeline-card {
+        gap: 0.75rem;
+        padding: 1.25rem;
+    }
+
+    .timeline-card-thumbnail {
+        flex-basis: 72px;
     }
 
     .timeline-card-body {
-        gap: 0.75rem;
+        margin-top: 0.75rem;
     }
 
     .timeline-logo {
-        width: 3rem;
-        height: 3rem;
+        width: 68px;
+        height: 68px;
+    }
+
+    .timeline-period {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.75rem;
     }
 
     .education-timeline > .empty-state {
-        margin-left: -2rem;
+        margin-left: -1.75rem;
+    }
+
+    .experience-section {
+        padding: 3.5rem 0;
+    }
+
+    .experience-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card-front,
+    .card-back {
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .container {
+        padding: 0 1rem;
+    }
+
+    .timeline-card {
+        align-items: flex-start;
+    }
+
+    .timeline-card-thumbnail {
+        flex-basis: 60px;
+    }
+
+    .timeline-logo {
+        width: 56px;
+        height: 56px;
+    }
+
+    .card-front,
+    .card-back {
+        flex-direction: column;
+    }
+
+    .experience-thumbnail {
+        width: 64px;
+        height: 64px;
+        align-self: flex-start;
+    }
+}
+
+@media (hover: none) {
+    .timeline-card:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    .experience-card:hover .card-inner {
+        transform: none;
     }
 }
