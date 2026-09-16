@@ -64,3 +64,7 @@ class Education(models.Model):
             for line in self.description.splitlines()
             if line.strip()
         ]
+
+# class Projects(models.Model):
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     title = models.CharField(max_length=255)
