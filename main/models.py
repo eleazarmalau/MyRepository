@@ -44,7 +44,7 @@ class Education(models.Model):
     institution = models.CharField(max_length = 255)
     major = models.CharField(max_length = 255)
     description = models.TextField()
-    thumbnail = models.CharField(max_length=500,blank=True, null=True)
+    thumbnail = models.URLField(blank=True, max_length=500)
     start_year = models.PositiveSmallIntegerField()
     end_year= models.PositiveSmallIntegerField(blank = True, null = True)
 

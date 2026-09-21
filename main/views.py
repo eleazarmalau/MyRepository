@@ -4,7 +4,7 @@ from django.core import serializers
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from main.forms import ProjectForm
+from main.forms import ProjectForm, EducationForm
 from main.models import Experience
 from main.models import Education
 from main.models import Project
@@ -24,17 +24,18 @@ def show_experience(request):
     return render(request, "experience.html", context)
 
 def show_education(request):
+    json_response = get_educations_json(request)
+    
+    educations = serializers.deserialize(
+            "json",
+            json_response.content.decode("utf-8"),
+        )
+    educations = [education.object for education in educations]
+    title_query = request.GET.get("title", "").strip()
     context = {
         "name" : "Isybal Sama Eleazar Malau",
-        "education_list" : Education.objects.order_by(
-            Case(
-                When(end_year__isnull=True, then=Value(0)),
-                default=Value(1),
-                output_field=IntegerField(),
-            ),
-            "-start_year",
-            "institution",
-        ),
+        "education_list" : educations,
+        "title_query": title_query,
     }
     return render(request, "education.html", context)
 
@@ -89,4 +90,46 @@ def get_projects_json(request):
 
     projects_json = serializers.serialize("json", projects)
     return HttpResponse(projects_json, content_type="application/json")
+
+def create_education(request):
+    form = EducationForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Jenjang Edukasi baru berhasil ditambahkan!")
+        return redirect("main:show_projects")
+
+    context = {
+        "name": "Isybal Sama Eleazar Malau",
+        "form": form,
+    }
+    return render(request, "educations_form.html", context)
+
+def delete_education(request, education_id):
+    project = get_object_or_404(Project, pk=education_id)
+
+    if request.method == "POST":
+        project.delete()
+        messages.success(request, "Edukasi berhasil dihapus!")
+        return redirect("main:show_educations")
+
+    return redirect("main:show_educations")
+
+def get_educations_json(request):
+    title_query = request.GET.get("title", "").strip()
+    educations = Education.objects.order_by(
+        Case(
+            When(end_year__isnull=True, then=Value(0)),
+            default=Value(1),
+            output_field=IntegerField(),
+        ),
+        "-start_year",
+        "institution",
+    )
+
+    if title_query:
+        educations = educations.filter(title__icontains=title_query)
+
+    educations_json = serializers.serialize("json", educations)
+    return HttpResponse(educations_json, content_type="application/json")
 # Create your views here.
