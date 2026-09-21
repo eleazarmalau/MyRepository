@@ -25,6 +25,8 @@ class Experience(models.Model):
     thumbnail = models.CharField(max_length=500,blank=True, null=True)
     started_at = models.DateTimeField(default = timezone.now)
     ended_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
@@ -47,6 +49,8 @@ class Education(models.Model):
     thumbnail = models.URLField(blank=True, max_length=500)
     start_year = models.PositiveSmallIntegerField()
     end_year= models.PositiveSmallIntegerField(blank = True, null = True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-start_year", "institution"]

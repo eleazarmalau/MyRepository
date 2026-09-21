@@ -98,7 +98,7 @@ def create_education(request):
     if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "Jenjang Edukasi baru berhasil ditambahkan!")
-        return redirect("main:show_projects")
+        return redirect("main:show_education")
 
     context = {
         "name": "Isybal Sama Eleazar Malau",
@@ -128,14 +128,14 @@ def update_education(request, education_id):
     return render(request, "educations_form.html", context)
 
 def delete_education(request, education_id):
-    project = get_object_or_404(Project, pk=education_id)
+    education = get_object_or_404(Education, pk=education_id)
 
     if request.method == "POST":
-        project.delete()
-        messages.success(request, "Edukasi berhasil dihapus!")
-        return redirect("main:show_educations")
+        education.delete()
+        messages.success(request, "Pendidikan berhasil dihapus!")
+        return redirect("main:show_education")
 
-    return redirect("main:show_educations")
+    return redirect("main:show_education")
 
 def get_educations_json(request):
     title_query = request.GET.get("title", "").strip()

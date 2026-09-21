@@ -274,8 +274,24 @@ a:focus-visible{
 }
 
 .education-page .section-heading {
-    max-width: 620px;
+    display: block;
+    max-width: none;
     margin-bottom: 2.75rem;
+}
+
+.education-heading-content {
+    max-width: 860px;
+}
+
+.education-heading-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.education-page .section-heading .education-heading-row h2 {
+    margin-bottom: 0;
 }
 
 .education-page .section-heading h2 {
@@ -285,7 +301,7 @@ a:focus-visible{
     margin-bottom: 0.8rem;
 }
 
-.education-page .section-heading > p:last-child,
+.education-heading-content > p:last-child,
 .timeline-details {
     color: var(--text-muted);
 }
@@ -432,8 +448,55 @@ a:focus-visible{
 }
 
 .timeline-card-content{
+    display: flex;
+    flex-direction: column;
     flex:1;
     min-width:0;
+}
+
+.education-card-actions {
+    display: flex;
+    align-self: flex-start;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.button education-delete-button{
+    color : red;
+}
+.education-card-actions > .button,
+.education-card-actions > .experience-status {
+    margin: 0;
+    padding-top: 0;
+}
+
+.education-card-actions > .button,
+.education-card-actions > .experience-status .button {
+    width: 132px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.education-card-actions > .button.education-update-button {
+    width: fit-content;
+}
+
+.button.education-delete-button {
+    background: var(--ink);
+}
+
+.button.education-delete-confirm-button {
+    background: var(--accent);
+    color: var(--ink);
+}
+
+.education-update-button:hover,
+.education-update-button:focus-visible {
+    background: var(--serenity);
 }
 
 @media (hover: hover) {
@@ -626,6 +689,18 @@ a:focus-visible{
     font: inherit;
     font-weight: 700;
     text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.button:hover,
+.button:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(48, 56, 75, 0.2);
+}
+
+.button:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 
 .button-secondary {
@@ -838,6 +913,15 @@ a:focus-visible{
     .project-add-button {
         width: 100%;
         justify-content: center;
+    }
+
+    .education-heading-row {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .education-heading-row .project-add-button {
+        width: auto;
     }
 
     .project-search {

@@ -8,9 +8,18 @@
     <section class="education-page" id="education" aria-labelledby="education-title">
         <div class="container">
             <div class = "section-heading">
-                <p class="section-kicker">My journey so far</p>
-                <h2 id="education-title">Education</h2>
-                <p>My academic journey, from what I am studying now to where it began.</p>
+                <div class="education-heading-content">
+                    <p class="section-kicker">My journey so far</p>
+                    <div class="education-heading-row">
+                        <h2 id="education-title">Education</h2>
+                        <a href="{% url 'main:create_education' %}"
+                           class="button project-add-button">
+                            <span aria-hidden="true">+</span>
+                            Tambah Education
+                        </a>
+                    </div>
+                    <p>My academic journey, from what I am studying now to where it began.</p>
+                </div>
             </div>
             <ol class="education-timeline">
                 {% for education in education_list %}
@@ -57,6 +66,11 @@
                                 </ul>
                                 {%endif%}
                             </div>
+                        </div>
+                        <div class="education-card-actions">
+                            <a href="{% url 'main:update_education' education.id %}"
+                               class="button education-update-button">Update</a>
+                            {% include "components/education_delete_modal.html" with education=education %}
                         </div>
                         </div>
                     </article>

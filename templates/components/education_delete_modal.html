@@ -1,0 +1,45 @@
+<p class="experience-status">
+    <button type="button"
+            class="button education-delete-button"
+            popovertarget="delete-education-{{ education.id }}"
+            aria-label="Hapus pendidikan {{ education.title }} di {{ education.institution }}"
+            title="Hapus pendidikan">
+        Hapus Pendidikan
+    </button>
+</p>
+<div id="delete-education-{{ education.id }}"
+     class="project-delete-modal"
+     popover="auto"
+     role="dialog"
+     aria-labelledby="delete-education-title-{{ education.id }}"
+     aria-describedby="delete-education-description-{{ education.id }}">
+    <button type="button"
+            class="project-delete-modal__backdrop"
+            popovertarget="delete-education-{{ education.id }}"
+            popovertargetaction="hide"
+            aria-label="Tutup konfirmasi hapus"></button>
+    <div class="project-delete-modal__content">
+        <button type="button"
+                class="project-delete-modal__close"
+                popovertarget="delete-education-{{ education.id }}"
+                popovertargetaction="hide"
+                aria-label="Tutup konfirmasi hapus">×</button>
+        <h2 id="delete-education-title-{{ education.id }}">Hapus Pendidikan?</h2>
+        <p id="delete-education-description-{{ education.id }}">
+            Apakah Anda yakin ingin menghapus pendidikan
+            <strong>{{ education.title }}</strong> di
+            <strong>{{ education.institution }}</strong>?
+            Data pendidikan yang dihapus tidak dapat dikembalikan.
+        </p>
+        <div class="project-delete-modal__actions">
+            <button type="button"
+                    class="button button-secondary"
+                    popovertarget="delete-education-{{ education.id }}"
+                    popovertargetaction="hide">Batal</button>
+            <form method="post" action="{% url 'main:delete_education' education.id %}">
+                {% csrf_token %}
+                <button type="submit" class="button education-delete-confirm-button">Ya, Hapus Pendidikan</button>
+            </form>
+        </div>
+    </div>
+</div>
