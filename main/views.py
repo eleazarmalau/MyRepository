@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.core import serializers
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_http_methods
 
 from main.forms import ProjectForm, EducationForm
 from main.models import Experience
@@ -102,6 +103,27 @@ def create_education(request):
     context = {
         "name": "Isybal Sama Eleazar Malau",
         "form": form,
+    }
+    return render(request, "educations_form.html", context)
+
+@require_http_methods(["GET", "POST"])
+def update_education(request, education_id):
+    education = get_object_or_404(Education, pk=education_id)
+    form = EducationForm(
+        request.POST if request.method == "POST" else None,
+        instance=education,
+    )
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Data pendidikan berhasil diperbarui!")
+        return redirect("main:show_education")
+
+    context = {
+        "name": "Isybal Sama Eleazar Malau",
+        "form": form,
+        "education": education,
+        "is_edit": True,
     }
     return render(request, "educations_form.html", context)
 

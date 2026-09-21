@@ -117,9 +117,19 @@ class EducationForm(ModelForm):
                     "placeholder": "2025",
                 }
             ),
-            "start_year": NumberInput(
+            "end_year": NumberInput(
                 attrs={
                     "placeholder": "Kosongkan jika masih berlangsung",
                 }
             ),
         }
+
+def clean(self):
+        cleaned_data = super().clean()
+        start_year = cleaned_data.get("start_year")
+        end_year = cleaned_data.get("end_year")
+
+        if start_year is not None and end_year is not None and end_year < start_year:
+            self.add_error("end_year", "Tahun selesai tidak boleh sebelum tahun mulai.")
+
+        return cleaned_data
