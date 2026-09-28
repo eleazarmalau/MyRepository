@@ -6,19 +6,21 @@
 
 :root {
     --ink: #30384b;
-    --paper: #fff7f9;
+    --paper: #f7f8fa;
+    --surface: #ffffff;
     --accent: #f7cac9;
-    --accent-dark: #657ba6;
-    --line: #dce2ef;
-    --text-muted: #646b7c;
-    --serenity: #91A8D0;
-    --radius: 4px;
+    --serenity: #91a8d0;
+    --accent-dark: #465e85;
+    --serenity-soft: #e8edf5;
+    --line: #dce2eb;
+    --text-muted: #626b7a;
+    --radius : 4px;
 }
 
 body {
     font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: var(--ink);
-    background: linear-gradient(to bottom, #fff7f9, #f7cac9,#b3cee5);
+    background: var(--paper);
     line-height: 1.6;
 }
 
@@ -33,6 +35,7 @@ h1, .brand {
 }
 
 .site-header {
+    background: var(--serenity);
     border-bottom: 1px solid var(--line);
 }
 
@@ -40,6 +43,8 @@ h1, .brand {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
     padding: 1.25rem 1.5rem;
 }
 
@@ -139,6 +144,7 @@ h1, .brand {
 
 .social-link:hover {
     background-color: var(--accent);
+    color: var(--ink);
 }
 
 .hero-photo {
@@ -166,13 +172,14 @@ h1, .brand {
     aspect-ratio: 1 / 1;
     object-fit: cover;
     border-radius: var(--radius);
-    border: 3px solid var(--ink);
+    border: 1px solid var(--line);
 }
 .site-footer {
     padding: 1.5rem;
     color: var(--text-muted);
     font-size: 0.85rem;
     border-top: 1px solid var(--line);
+    background: var(--accent);
 }
 
 @media (max-width: 600px) {
@@ -204,6 +211,7 @@ section[id] {
 .site-header nav{
     flex-wrap: wrap;
     gap: 0.75rem 1.5rem;
+    align-items: center;
 }
 
 .site-header nav a{
@@ -347,23 +355,29 @@ a:focus-visible{
 }
 
 .timeline-card {
-    padding: 1.5rem;
-    border: 1px solid var(--accent-dark);
-    background: white;
-    border-radius: 15px;
+     display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
     overflow: hidden;
-    align-items: center;
-    display: flex;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    box-shadow: 0 4px 16px rgba(48, 56, 75, 0.04);
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
 }
 
 .timeline-card:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(-2px);
+    border-color: var(--serenity);
+    box-shadow: 0 8px 24px rgba(48, 56, 75, 0.08);
 }
 
 .timeline-card-thumbnail {
-    flex: 0 0 150px;
+    flex: 0 0 88px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -400,13 +414,14 @@ a:focus-visible{
 }
 
 .timeline-period {
-    padding: 0.5rem;
-    color: var(--text-muted);
+    padding: 0.4rem 0.75rem;
+    color: var(--accent-dark);
     white-space: nowrap;
-    background:var(--accent);
-    border: 1px solid var(--accent-dark);
-    border-radius: 12px;
+    background:var(--serenity-soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
     overflow: hidden;
+    white-space : nowrap;
 }
 
 .current-label {
@@ -422,8 +437,8 @@ a:focus-visible{
 }
 
 .timeline-logo {
-    width: 115px;
-    height: 115px;
+    width: 80px;
+    height: 80px;
     object-fit: contain;
 }
 
@@ -456,29 +471,25 @@ a:focus-visible{
 
 .education-card-actions {
     display: flex;
-    align-self: flex-start;
-    justify-content: flex-start;
+    align-items: center;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 1rem;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
 }
 
-.button education-delete-button{
-    color : red;
+.education-card-actions .education-update-button,
+.education-card-actions .education-delete-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 16px;
+    line-height: 1.4;
 }
-.education-card-actions > .button,
+
 .education-card-actions > .experience-status {
     margin: 0;
     padding-top: 0;
-}
-
-.education-card-actions > .button,
-.education-card-actions > .experience-status .button {
-    width: 132px;
-    padding: 0.35rem 0.65rem;
-    font-size: 0.75rem;
-    text-align: center;
-    white-space: nowrap;
 }
 
 .education-card-actions > .button.education-update-button {
@@ -546,7 +557,9 @@ a:focus-visible{
 .experience-card {
     border: 1px solid var(--line);
     border-radius: var(--radius);
+    gap : 5px;
     perspective: 1000px;
+    background: var(--accent);
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
@@ -573,12 +586,14 @@ a:focus-visible{
 }
 
 .card-front {
-    background: linear-gradient(to bottom, #fff7f9, #fddbdb,#d0e4f5);
+    background: var(--serenity-soft);
+    border-radius: var(--radius);
 }
 
 .card-back {
-    background: white;
-    color: #000;
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: var(--radius);
     transform: rotateY(180deg);
 }
 
@@ -653,11 +668,14 @@ a:focus-visible{
 }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.project-search_imput {
     width: 100%;
     box-sizing: border-box;
     padding: 0.7rem;
-    border: 1px solid var(--accent);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
     border-radius: var(--radius);
     font: inherit;
     transition:
@@ -678,40 +696,98 @@ a:focus-visible{
 }
 
 .button {
-    display: inline-block;
-    height: fit-content;
-    border: 0;
-    border-radius: var(--radius);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: 42px;
     padding: 0.65rem 1rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
     background: var(--accent);
-    color: white;
+    color: var(--ink);
     cursor: pointer;
     font: inherit;
-    font-weight: 700;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.4;
     text-decoration: none;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
 }
 
-.button:hover,
-.button:focus-visible {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(48, 56, 75, 0.2);
+.button-login {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: 42px;
+    padding: 0.65rem 1rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: var(--accent);
+    margin-bottom: 3px;
+    color: var(--ink);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
 }
+
+.button:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(48, 56, 75, 0.08);
+}
+.button:focus-visible {
+    outline: 2px solid var(--accent-dark);
+    outline-offset: 3px;
+}
+
 
 .button:active {
     transform: translateY(0);
     box-shadow: none;
 }
 
-.button-secondary {
-    background: var(--ink);
+.button-secondary,
+.button.education-update-button{
+    background: var(--serenity-soft);
+    color: var(--accent-dark);
+    border-color: var(--line);
+}
+
+.button.education-delete-button {
+    background: #fff1f0;
+    color: #a33131;
+    border-color: #efcecb;
+}
+
+.button.education-delete-confirm-button {
+    background: #a33131;
+    color: #ffffff;
+}
+
+.button-secondary:hover,
+.education-update-button:hover,
+.education-update-button:focus-visible {
+    background: #dbe4f1;
+    color: var(--accent-dark);
 }
 
 .project-card {
     overflow: hidden;
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    background: var(--paper);
+    background: var(--serenity-soft);
+    padding: 16px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -722,14 +798,16 @@ a:focus-visible{
 .project-image {
     display: block;
     width: 100%;
+    height: auto;
     aspect-ratio: 16 / 9;
     object-fit: cover;
-    border: 1px solid var(--ink);
+    border: 1px solid var(--line);
     border-radius: var(--radius);
 }
 
 .project-content {
     padding: 1rem 1.25rem 1.25rem;
+    gap: 12px;
 }
 
 .project-content h2 {
@@ -758,14 +836,7 @@ a:focus-visible{
 .project-grid .experience-card {
     display: flex;
     flex-direction: column;
-}
-
-.project-image {
-    display: block;
-    width: 100%;
-    height: auto;
-    border: 1px solid black;
-    border-radius: var(--radius);
+    gap: 16px;
 }
 
 .project-header h1 {
@@ -809,13 +880,31 @@ a:focus-visible{
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 12px;
     margin-top: 1rem;
 }
 
 .project-actions .button {
-    font-size: 0.85rem;
-    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.project-actions .button.button-star {
+    min-height: 44px;
+    padding: 10px 16px;
+    line-height: 1.4;
+}
+
+.project-actions .star-form {
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
 }
 
 .project-card-actions {
@@ -829,7 +918,10 @@ a:focus-visible{
 }
 
 .project-actions .experience-status {
-    margin-top: 0;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
 }
 
 .project-delete-modal {
@@ -906,23 +998,29 @@ a:focus-visible{
 
 .star-form {
     display: inline;
+    margin: 0;
 }
 
 .button-star {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    background: var(--ink);
+    background: var(--surface);
+    color: var(--accent-dark);
+    border-color: var(--line);
 }
 
 .button-star.is-starred {
     background: var(--accent);
+    color: var(--ink);
+    border-color: var(--accent);
 }
 
 .star-count {
-    padding: 0.05rem 0.4rem;
+    padding: 0.1rem 0.45rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(48, 56, 75, 0.07);
+    color: inherit;
     font-size: 0.8rem;
 }
 

@@ -24,7 +24,7 @@
                     {% for error in form.non_field_errors %}
                         <p class="form-error">{{ error }}</p>
                     {% endfor %}
-                    <button type="submit" class="button">Login</button>
+                    <button type="submit" class="button-login">Login</button>
                 </form>
                 <p>No account yet? <a href="{% url 'main:register' %}">Register here</a>.</p>
             </div>
