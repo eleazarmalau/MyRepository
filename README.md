@@ -157,6 +157,7 @@ https://chatgpt.com/s/cx_6ab15cc7da34819196d2bbba338d72f0
 2. Pengkritisan terhadap AI
 Masih banyak sekali prompt yang saya berikan sepertinya tidak dimengerti oleh AI kalau dalam segi yang kompleks sehingga masih harus saya breakdown dan kerjakan secara manual terlebih dahulu baru saya meminta AI untuk melakukan pengecekkan apakah semua sudah sesuai dan apakah akan berjalan dengan benar pada akhirnya.
 
+
 # Assignment 4
 
 ### Progres
