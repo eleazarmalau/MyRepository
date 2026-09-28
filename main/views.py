@@ -36,14 +36,14 @@ def show_experience(request):
     return render(request, "experience.html", context)
 
 def show_education(request):
-    json_response = get_educations_json(request).prefetch_related("starred_by")
-    
+    json_response = get_educations_json(request)
+    title_query = request.GET.get("title", "").strip()
     educations = serializers.deserialize(
             "json",
             json_response.content.decode("utf-8"),
         )
     educations = [education.object for education in educations]
-    title_query = request.GET.get("title", "").strip()
+    
     context = {
         "name" : "Isybal Sama Eleazar Malau",
         "education_list" : educations,
@@ -179,7 +179,17 @@ def get_educations_json(request):
     if title_query:
         educations = educations.filter(title__icontains=title_query)
 
-    educations_json = serializers.serialize("json", educations)
+    educations_json = serializers.serialize("json", educations,fields=[
+        "title",
+        "institution",
+        "major",
+        "description",
+        "thumbnail",
+        "start_year",
+        "end_year",
+        "created_at",
+        "updated_at",
+    ],)
     return HttpResponse(educations_json, content_type="application/json")
 
 def register(request):
