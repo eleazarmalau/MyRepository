@@ -205,6 +205,9 @@ Commit 6: Added tests for the new features
 Commit 7: New colors and adjusting css stuff
 - Memperbaiki segala macam bentuk CSS yang kurang rapih
 
+Commit 8: Menambahkan update untuk projects
+- Membuat bagian update untuk projects dan sesuai dengan role-based access
+
 ## AI Disclosure
 Model yang digunakan adalah: Chat GPT 6 Astra-Light
 
