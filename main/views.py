@@ -74,6 +74,7 @@ def show_projects(request):
         "name": "Isybal Sama Eleazar Malau",
         "project_list": projects,
         "title_query": title_query,
+        "is_editor": is_editor(request.user),
     }
     return render(request, "projects.html", context)
 
@@ -92,6 +93,36 @@ def create_project(request):
         "name": "Isybal Sama Eleazar Malau",
         "form": form,
     }
+    return render(request, "projects_form.html", context)
+
+@login_required(login_url="/login/")
+@require_http_methods(["GET", "POST"])
+def update_project(request, project_id):
+    if not (
+        request.user.is_superuser
+        or is_editor(request.user)
+    ):
+        raise PermissionDenied
+
+    project = get_object_or_404(Project, pk=project_id)
+
+    form = ProjectForm(
+        request.POST if request.method == "POST" else None,
+        instance=project,
+    )
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Data proyek berhasil diperbarui!")
+        return redirect("main:show_projects")
+
+    context = {
+        "name": "Isybal Sama Eleazar Malau",
+        "form": form,
+        "project": project,
+        "is_edit": True,
+    }
+
     return render(request, "projects_form.html", context)
 
 @login_required(login_url="/login/") 

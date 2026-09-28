@@ -4,7 +4,7 @@ NPM : 2506623963
 
 Kelas : PBP A
 
-### Assignment 1
+# Assignment 1
 1. Saya sendiri menggunakan element semantik HTML 5 beberapa yang berupa <section>, <header>, <article>, <nav>, <main>, <footer>, dan beberapa lagi yang mungkin saya lupa mention. Elemen-elemen tersebut membantu saya dalam memahami pembagian format web saya agar lebih terstruktur dan mudah dibaca dan dimengerti untuk posisi apa saja hal-hal berada di web saya. Beberapa yang paling utama adalah seperti <section> yang membantu saya membagi-bagi bagian-bagian utama webnya, seperti untuk profile, education, dan experiences. Setelah itu saya juga menggunakan <article> untuk membuat isi dari section tersebut menjadi sebuah "bentuk" card yang mudah untuk dinavigasikan. Setiap section juga ada memiliki id untuk bisa membantu mengimplementasikan navigasi barnya menjadi lebih fungsional
 
 2. Beberapa tantangan yang saya temui selama membuat CSS untuk layoutnya adalah kalau susah untuk mengadjust beberapa kartunya agar sesuai dengan ukuran yang diinginkan, selain itu juga ada beberapa typo dalam index.htmlnya dan juga di style.cssnya yang membuat saya bingung kenapa apa yang saya buat itu tidak masuk. Permasalahan utama yang saya temukan saat buat webnya kebanyakan terletak di pengaturan ukuran dari masing-masing hal yang saya tambahkan sebenarnya. 
@@ -15,7 +15,7 @@ Untuk mengevaluasi tampilan agar tetap responsif adalah kalau saya melihat keter
 
 Pada iterasi berikutnya saya paling ingin menambahkan fitur untuk pengelolaan data-datanya melalui sebuah database. Dengan adanya hal tersebut, saya bisa menambah atau mengubah posisi, fitur, institusi, periode, logo, dan hal-hal lainnya yang ada di web saya sekarang tanpa mengubah struktur HTMLnya. Pembaruan portofolionya juga akan menjadi lebih praktis kedepannya.
 
-### AI Disclosure:
+## AI Disclosure:
 Model yang digunakan adalah Chat GPT-6 Astra Medium
 
 1. Cakupan Penggunaan dan Prompting
@@ -44,7 +44,7 @@ Git dan Deployment ke PWS:
     Terdapat beberapa kondisi dimana AI memberikan sebuah framework atau design yang tidak sesuai dengan keinginan saya seperti menambahkan border untuk logo yang kemudian saya hilangkan saja karena tidak sesuai dengan tampilan yang saya inginkan. Terdapat juga beberapa panduan untuk penggunaan warna yang saya ubah sesuai dengan keinginan saya. 
 
 
-### Assignment 2
+# Assignment 2
 1. Ketika pengguna membuka halaman portofolio baru misalkan education, browser akan mengirimkan HTTP request ke Django. Request tersebut akan dicocokan melalui urls.py yang ada di dalam folder Portfolio di mana di dalam file tersebut ada command include("main.urls) yang akan melanjutkan proses requestnya ke main/urls.py
 
 Di dalam urls.py dalam main ini akan ada alamat education yang akan membawa lagi ke view show_education yang sudah dibuat. View tersebut akan mengambil data pendidikan dari database dengan model Education yang sudah dibuat dan kemudian data-data tersebut akan dimasukkan ke dalam context dengan nama education_list dan diteruskan ke template education.html dengan fungsi render().
@@ -63,7 +63,7 @@ Sementara migrate ini adalah fitur untuk menerapkan migrationnya yang sudah dibu
 
 Contoh perubahan model yang mengharuskan untuk menjalankan kedua perintah ini adalah kalau ada perubahan model dalam main/models.py karena file inilah yang memegang seluruh bentuk database dari webnya. Jadi misalkan ada membuat perubahan ke bagian title, institution, major, thumbnail, ataupun primary key lainnya dalam model education akan membutuhkan developer untuk melakukan dua command makemigrations dan migrate tersebut karena databasenya yang mau diubah bukan tampilan atau data yang dimasukkan ke dalam database tersebut yang diubah.
 
-### AI Disclosure:
+## AI Disclosure:
 Model yang digunakan adalah Chat GPT-6 Astra dan juga Chat GPT-5.6 Terra
 
 1. Cakupan Penggunaan dan Prompting
@@ -94,7 +94,7 @@ Pembuatan Unit Test:
     Mayoritas design atau ide CSS yang diberikan AI tidak sesuai dengan keinginan yang saya inginkan sehingga saya pada akhirnya melakukan perubahan secara manual dan mengubah seluruh layout CSSnya sendiri. Seperti untuk timeline di education section awalnya masih tidak centered dan tidak membentuk tampilan kartu yang diinginkan sehingga saya pada akhirnya harus menambahkan fitur-fitur baru sendiri ke dalam CSSnya dan juga memodifikasi template educationnya seperti menambahkan div baru agar bisa membagi-bagi content untuk card educationnya.
 
 
-### Assignment 3
+# Assignment 3
 
 1. Pada tugas kali ini, ModelForm digunakan karena komponen ini membuat kolom formulir dan aturan validasi berdasarkan model. Hal ini membuat duplikasi kode berkurang dan menjaga konsistensi antara input formulir dengan struktur basis data. EducationForm menggunakan model Education dan hanya menampilkan kolom-kolom yang dapat diedit oleh pengguna.
 Menambahkan `{% csrf_token %}` pada formulir POST sebagai perlindungan terhadap serangan *Cross-Site Request Forgery* (CSRF). Tanpa perlindungan ini, situs web berbahaya dapat mencoba melakukan tindakan tertentu dengan memanfaatkan peramban dan sesi masuk pengguna. *Middleware* CSRF Django akan memeriksa token tersebut sebelum menerima permintaan.
@@ -104,7 +104,7 @@ Menambahkan `{% csrf_token %}` pada formulir POST sebagai perlindungan terhadap 
 3. Saat klient meminta '/api/education', Django akan merutekan request tersebut ke 'get_educations_json' view. Dari view itu, ini akan mengambil data edukasi dari database, mengaplikasikan filter yang direquest (jika ada), dan menserialisasikan queryset dengan 'serializers.serialized('json', educations)'. Setelah itu dia akan mengembalikkan JSON text dalam HttpResponse dengan tipe konten 'application/json'.
 Serialazation ini esensial dan penting karena instance model Django adalah object Python dan sementara JSON tidak merepresentasikan object tersebut secara langsung. Serialization memgubah kunci primernya dan memetakan nilainya ke dalam format yang klient bisa terima dan gunakan.
 
-### AI Disclosure:
+## AI Disclosure:
 Model yang digunakan adalah: Chat GPT 6 Astra dan Chat GPT 5 Luna serta Copilot
 
 1. Cakupan penggunaan dan strategi prompting
@@ -157,3 +157,108 @@ https://chatgpt.com/s/cx_6ab15cc7da34819196d2bbba338d72f0
 2. Pengkritisan terhadap AI
 Masih banyak sekali prompt yang saya berikan sepertinya tidak dimengerti oleh AI kalau dalam segi yang kompleks sehingga masih harus saya breakdown dan kerjakan secara manual terlebih dahulu baru saya meminta AI untuk melakukan pengecekkan apakah semua sudah sesuai dan apakah akan berjalan dengan benar pada akhirnya.
 
+# Assignment 4
+
+### Progres
+Commit 1: Adding an editor role and enforcing role-based acess for education as well as adding a new star model for education
+Yang dikerjakan:
+- Tambahkan fungsi is_editor(user) untuk mengecek grup Editor.
+- Tambahkan @login_required pada create, update, dan delete.
+- Create dan delete hanya untuk superuser.
+- Update untuk superuser atau Editor.
+- Gunakan PermissionDenied untuk pengguna login yang tidak berhak.
+- Tambahkan @require_POST pada delete.
+- Biarkan halaman baca dan JSON tetap publik.
+
+Commit 2: Display education controls based on user role
+Yang dikerjakan
+- Kirim is_editor melalui context show_education.
+- Membungkus button education agar sesuai dengan user role
+
+Commit 3: Add education star relation and protect JSON output
+Yang dikerjakan:
+- Tambahkan starred_by = models.ManyToManyField(...) pada Education.
+- Batasi field yang diserialisasi di get_educations_json agar starred_by tidak ikut tampil.
+
+Commit 4: add authenticated education star google
+Yang dikerjakan:
+- Tambahkan fungsi toggle_education_star.
+- Gunakan @login_required dan @require_POST.
+- Jika pengguna sudah memberi star, hapus relasinya.
+- Jika belum, tambahkan relasinya.
+- Tambahkan URL education/<uuid:education_id>/star/.
+
+Commit 5: Show education star counts
+Yang dikerjakan:
+- Siapkan jumlah star dan status star pengguna di show_education.
+- Tambahkan form POST dengan {% csrf_token %}.
+- Tampilkan Star atau Unstar sesuai status pengguna.
+- Tampilkan total star.
+- Untuk pengunjung, tampilkan tautan login.
+
+Commit 6: Added tests for the new features
+- Tambahkan pengujian akses untuk pengunjung, pengguna biasa, Editor, dan superuser.
+- Uji bahwa akses langsung ke URL tetap dibatasi.
+- Uji star/unstar, POST, CSRF, serta keamanan JSON.
+
+Commit 7: New colors and adjusting css stuff
+- Memperbaiki segala macam bentuk CSS yang kurang rapih
+
+## AI Disclosure
+Model yang digunakan adalah: Chat GPT 6 Astra-Light
+
+Prompt Strategy: Saya menggunakan AI untuk membantu memperbaiki CSS pada section Projects dan Education. Saya memberikan screenshot dan kode CSS, lalu meminta bantuan untuk merapikan ukuran tombol, jarak antar elemen, serta kesejajaran teks dan tombol. Ketika hasil perubahan belum sesuai, saya memberikan screenshot dan kode terbaru agar penyebabnya diperiksa kembali. Selain itu saya juga meminta untuk memberikan framework dan list pengeerjaan yang harus dibuat agar lebih runtut proses pengerjaannya.
+
+Beberapa contoh prompt yang digunakan:
+        Prompt: “buat apa yang harus dikerjain dalam bentuk hitungan per commit, jadi bikin progress commit git gitu”
+        Jawaban: AI membagi pengerjaan menjadi enam tahap: pembatasan akses Education, penyesuaian tombol berdasarkan role, penambahan relasi star dan pembatasan JSON, implementasi toggle star, tampilan status star, serta pengujian dan dokumentasi. Setiap tahap disertai contoh perintah dan pesan commit.
+
+        Prompt: “coba ini apa aja yang dibikin ke kodenya langsung?”
+        Jawaban: AI memberikan contoh perubahan pada main/views.py, meliputi:
+            - Fungsi is_editor() untuk memeriksa keanggotaan grup Editor.
+            - @login_required untuk mengarahkan pengunjung ke login.
+            - Pemeriksaan superuser pada create dan delete.
+            - Pemeriksaan superuser atau Editor pada update.
+            - PermissionDenied untuk menghasilkan HTTP 403.
+            - @require_POST untuk membatasi metode penghapusan.
+
+        Prompt: “Implement the Editor role using Django Group or Permission (assigned exclusively via Django Admin). Buat bagian ini, ini tau darimana?”
+        Jawaban: AI menjelaskan bahwa role Editor diketahui melalui relasi grup pada akun pengguna. Fungsi user.groups.filter(name="Editor").exists() hanya memeriksa keanggotaan. Pembuatan grup dan penetapan anggotanya dilakukan melalui Django Admin, bukan melalui form registrasi.
+
+        Prompt: “‘HttpResponse’ object has no attribute ‘prefetch_related’ — ini error apa?”
+        Jawaban: AI menjelaskan bahwa get_educations_json() menghasilkan HttpResponse, sedangkan prefetch_related() digunakan pada QuerySet. AI menyarankan menghapus pemanggilan tersebut dari respons JSON dan mempertahankan proses deserialisasi yang digunakan pada halaman Education.
+
+        Prompt: “coba kalo bagian ini kerjainnya gimana?”
+        Jawaban: Untuk tahap penambahan star, AI memberikan contoh ManyToManyField bernama starred_by pada model Education, perintah makemigrations dan migrate, serta daftar field eksplisit pada serialisasi JSON agar identitas pemberi star tidak ikut dikirim.
+
+        Prompt: “kalo ini kodenya gimana?”
+        Jawaban: AI memberikan fungsi toggle_education_star dan route pada main/urls.py. Fungsi tersebut memerlukan login, hanya menerima POST, dan menambahkan atau menghapus relasi star berdasarkan status pengguna pada Education yang dipilih.
+
+        Prompt: “I wanna use the components just like this one … to add the star button buat educationnya gimana caranya”
+        Jawaban: AI membantu memisahkan tombol star menjadi templates/components/education_star.html, kemudian memanggilnya melalui {% include %} pada setiap kartu Education. Component menampilkan tombol Star/Unstar bagi pengguna login, jumlah star, dan tautan login bagi pengunjung. Saya juga mendiskusikan penggunaan relasi education.starred_by langsung di template.
+
+        Prompt: “Invalid block tag … ‘empty’, expected ‘elif’, ‘else’ or ‘endif’ — kenapa dapet error itu?”
+        Jawaban: AI menemukan dua typo pada template: {% endif } yang kekurangan % dan is.editor yang seharusnya is_editor. Tag penutup yang salah membuat Django menganggap blok if belum selesai ketika menemukan {% empty %}.
+
+        Prompt: “kalau ini bikin juga kodenya dong”
+        Jawaban: AI menyusun contoh pengujian pada main/tests.py untuk akses empat role, pembatasan URL langsung, CRUD owner, update Editor, star/unstar, pencegahan relasi duplikat, POST, CSRF, keamanan JSON, dan visibilitas tombol. AI juga memberikan draft dokumentasi pengaturan Editor untuk README.
+
+        Prompt: “FAIL: test_action_buttons_follow_user_role … (user='editor') … pas test dapet ini”
+        Jawaban: AI menjelaskan bahwa halaman berhasil dibuka, tetapi link Update tidak ditemukan untuk Editor. Pemeriksaan diarahkan pada pengiriman is_editor melalui context, penulisan kondisi template, dan kemungkinan tombol Update berada di dalam kondisi khusus superuser. Hasil tes yang saya kirim saat itu menunjukkan 20 tes dijalankan dengan satu kegagalan.
+
+        Prompt: “that's all my css code, tell me which ones I need to change to make it more appealing”
+        Jawaban: AI meninjau CSS dan menyarankan perubahan terarah: memperbaiki variabel --radius, mengganti gradient halaman dengan warna netral, mempertahankan Rose Quartz dan Serenity sebagai aksen, memperhalus border dan shadow, serta menyeragamkan ukuran dan warna tombol.
+
+        Prompt: “gak ada buat kayak automatic antar semua elemen gitu?”
+        Jawaban: AI menjelaskan penggunaan display: flex, flex-direction: column, dan gap untuk mengatur jarak antar anak langsung container. AI juga menjelaskan perbedaan gap, margin antarelemen, dan line-height untuk jarak antarbaris teks.
+
+        Prompt: “masih gak align coba cekin itu kenapa?”
+        Jawaban: Setelah membaca CSS terbaru dan screenshot, AI menemukan bahwa .experience-status masih memiliki padding-top: 1rem, sementara aturan khusus Projects hanya menghapus margin-top. AI menyarankan menghapus margin dan padding pada pembungkus tombol Hapus agar sejajar dengan tombol Star.
+
+        Prompt: “coba tambahin bagian update ke projects kayak di education”
+        Jawaban: AI memeriksa ZIP terbaru dan memberikan perubahan pada empat file: main/views.py, main/urls.py, templates/projects.html, dan templates/projects_form.html. Perubahan mencakup view update untuk Editor dan superuser, URL edit, tombol bersyarat, serta form bersama untuk tambah dan update. AI menekankan penggunaan instance=project dan action form yang sesuai agar penyimpanan edit tidak membuat proyek baru.
+Link Share Chat:
+https://chatgpt.com/share/6aba8537-72ec-83ec-902a-9a4e19786b9f
+
+2. Pengkritisan Terhadap AI
+Banyak hasil prompt yang diberikan tidak konsisten terutama dalam bagian CSSnya sehingga saya harus mencari sendiri permasalahannya dan menyelesaikannya sendiri, seperti prompt prompt error yang saya kirim pada akhirnya saya mengerjakannya sendiri pada akhirnya karena jawaban AI kurang jelas. Selain itu, di bagian CSS saya membuat beberapa sendiri buat pengaturannya agar sesuai dengan keinginan yang saya inginkan.

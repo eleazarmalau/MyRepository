@@ -759,7 +759,7 @@ a:focus-visible{
 
 .button-secondary,
 .button.education-update-button{
-    background: var(--serenity-soft);
+    background: var(--serenity);
     color: var(--accent-dark);
     border-color: var(--line);
 }
