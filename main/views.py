@@ -164,6 +164,18 @@ def delete_education(request, education_id):
     messages.success(request, "Pendidikan berhasil dihapus!")
     return redirect("main:show_education")
 
+@login_required(login_url="main:login")
+@require_POST
+def toggle_education_star(request, education_id):
+    education = get_object_or_404(Education, pk=education_id)
+
+    if education.starred_by.filter(pk=request.user.pk).exists():
+        education.starred_by.remove(request.user)
+    else:
+        education.starred_by.add(request.user)
+
+    return redirect("main:show_education")
+
 def get_educations_json(request):
     title_query = request.GET.get("title", "").strip()
     educations = Education.objects.order_by(

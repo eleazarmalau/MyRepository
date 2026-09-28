@@ -1,6 +1,6 @@
 from django.urls import path
 
-from main.views import show_main, show_experience, show_education, show_projects, create_project, get_projects_json, delete_project, create_education, get_educations_json, delete_education, update_education, register, login_user, logout_user, toggle_star
+from main.views import show_main, show_experience, show_education, show_projects, create_project, get_projects_json, delete_project, create_education, get_educations_json, delete_education, update_education, register, login_user, logout_user, toggle_star, toggle_education_star
 
 app_name = "main"
 
@@ -19,9 +19,6 @@ urlpatterns = [
     path("register/", register, name="register"),
     path("login/", login_user, name="login"),
     path("logout/", logout_user, name="logout"),
-    path(
-    "projects/<uuid:project_id>/star/",
-    toggle_star,
-    name="toggle_star",
-    ),
+    path("projects/<uuid:project_id>/star/", toggle_star,name="toggle_star"),
+    path("education/<uuid:education_id>/star/", toggle_education_star,name="toggle_education_star"),
 ]
