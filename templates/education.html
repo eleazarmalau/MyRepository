@@ -74,10 +74,13 @@
                             <a href="{% url 'main:update_education' education.id %}"
                                class="button education-update-button">Update</a>
                             {% endif %}
+                            
                             {% if user.is_superuser %}
                                 {% include "components/education_delete_modal.html" with education=education %}
                             {% endif %}
+                            {% include "components/education_star.html" with education=education %}
                         </div>
+                        
                         </div>
                     </article>
                 </li>

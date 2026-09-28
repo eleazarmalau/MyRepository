@@ -43,7 +43,15 @@ def show_education(request):
             json_response.content.decode("utf-8"),
         )
     educations = [education.object for education in educations]
-    
+    for education in educations:
+        education.star_count = education.starred_by.count()
+
+        education.is_starred = (
+            request.user.is_authenticated
+            and education.starred_by.filter(
+                pk=request.user.pk
+            ).exists()
+        )
     context = {
         "name" : "Isybal Sama Eleazar Malau",
         "education_list" : educations,
