@@ -48,6 +48,7 @@ def show_education(request):
         "name" : "Isybal Sama Eleazar Malau",
         "education_list" : educations,
         "title_query": title_query,
+        "is_editor": is_editor(request.user),
     }
     return render(request, "education.html", context)
 

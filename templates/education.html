@@ -12,11 +12,13 @@
                     <p class="section-kicker">My journey so far</p>
                     <div class="education-heading-row">
                         <h2 id="education-title">Education</h2>
+                        {% if user.is_superuser %}
                         <a href="{% url 'main:create_education' %}"
                            class="button project-add-button">
                             <span aria-hidden="true">+</span>
                             Tambah Education
                         </a>
+                        {% endif %}
                     </div>
                     <p>My academic journey, from what I am studying now to where it began.</p>
                 </div>
@@ -68,9 +70,13 @@
                             </div>
                         </div>
                         <div class="education-card-actions">
+                            {% if user.is_superuser or is.editor %}
                             <a href="{% url 'main:update_education' education.id %}"
                                class="button education-update-button">Update</a>
-                            {% include "components/education_delete_modal.html" with education=education %}
+                            {% endif %}
+                            {% if user.is_superuser %}
+                                {% include "components/education_delete_modal.html" with education=education %}
+                            {% endif }
                         </div>
                         </div>
                     </article>
