@@ -70,7 +70,7 @@
                             </div>
                         </div>
                         <div class="education-card-actions">
-                            {% if user.is_superuser or is.editor %}
+                            {% if user.is_superuser or is_editor %}
                             <a href="{% url 'main:update_education' education.id %}"
                                class="button education-update-button">Update</a>
                             {% endif %}
