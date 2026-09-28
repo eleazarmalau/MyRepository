@@ -10,6 +10,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required  
 from django.core.exceptions import PermissionDenied
+from django.views.decorators.http import require_POST, require_http_methods
 
 from main.forms import ProjectForm, EducationForm
 from main.models import Experience
@@ -35,7 +36,7 @@ def show_experience(request):
     return render(request, "experience.html", context)
 
 def show_education(request):
-    json_response = get_educations_json(request)
+    json_response = get_educations_json(request).prefetch_related("starred_by")
     
     educations = serializers.deserialize(
             "json",
@@ -107,7 +108,11 @@ def get_projects_json(request):
     projects_json = serializers.serialize("json", projects, use_natural_foreign_keys = True)
     return HttpResponse(projects_json, content_type="application/json")
 
+@login_required(login_url="/login/")
+@require_http_methods(["GET", "POST"])
 def create_education(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
     form = EducationForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -121,8 +126,14 @@ def create_education(request):
     }
     return render(request, "educations_form.html", context)
 
+@login_required(login_url="/login/")
 @require_http_methods(["GET", "POST"])
 def update_education(request, education_id):
+    if not (
+        request.user.is_superuser
+        or is_editor(request.user)
+    ):
+        raise PermissionDenied
     education = get_object_or_404(Education, pk=education_id)
     form = EducationForm(
         request.POST if request.method == "POST" else None,
@@ -142,14 +153,14 @@ def update_education(request, education_id):
     }
     return render(request, "educations_form.html", context)
 
+@login_required(login_url="/login/")
+@require_POST
 def delete_education(request, education_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
     education = get_object_or_404(Education, pk=education_id)
-
-    if request.method == "POST":
-        education.delete()
-        messages.success(request, "Pendidikan berhasil dihapus!")
-        return redirect("main:show_education")
-
+    education.delete()
+    messages.success(request, "Pendidikan berhasil dihapus!")
     return redirect("main:show_education")
 
 def get_educations_json(request):
@@ -219,4 +230,10 @@ def toggle_star(request, project_id):
             project.starred_by.add(request.user)
 
     return redirect("main:show_projects")
+
+def is_editor(user):
+    return (
+        user.is_authenticated
+        and user.groups.filter(name="Editor").exists()
+    )
 # Create your views here.

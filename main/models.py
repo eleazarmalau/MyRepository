@@ -52,7 +52,11 @@ class Education(models.Model):
     end_year= models.PositiveSmallIntegerField(blank = True, null = True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    starred_by = models.ManyToManyField(
+    User,
+    related_name="starred_educations",
+    blank=True,
+    )
     class Meta:
         ordering = ["-start_year", "institution"]
         constraints = [models.CheckConstraint(
