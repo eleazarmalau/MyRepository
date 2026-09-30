@@ -11,11 +11,13 @@ from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required  
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.http import require_POST, require_http_methods
-
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 from main.forms import ProjectForm, EducationForm
 from main.models import Experience
 from main.models import Education
 from main.models import Project
+from main.forms import ProjectForm
 
 import datetime
 def show_main(request):
@@ -62,18 +64,17 @@ def show_education(request):
 
 ...
 def show_projects(request):
-    json_response = get_projects_json(request)
-
-    projects = serializers.deserialize(
-        "json",json_response.content.decode("utf-8"),
-    )
-    projects = [project.object for project in projects]
     title_query = request.GET.get("title", "").strip()
+    projects = Project.objects.prefetch_related("starred_by").all()
+
+    if title_query:
+        projects = projects.filter(title__icontains=title_query)
 
     context = {
         "name": "Isybal Sama Eleazar Malau",
-        "project_list": projects,
         "title_query": title_query,
+        "form": ProjectForm(),
+        "project_list": projects,
         "is_editor": is_editor(request.user),
     }
     return render(request, "projects.html", context)
@@ -140,13 +141,33 @@ def delete_project(request, project_id):
 
 def get_projects_json(request):
     title_query = request.GET.get("title", "").strip()
-    projects = Project.objects.all()
+    projects = Project.objects.prefetch_related('starred_by').all()
 
     if title_query:
         projects = projects.filter(title__icontains=title_query)
 
-    projects_json = serializers.serialize("json", projects, use_natural_foreign_keys = True)
-    return HttpResponse(projects_json, content_type="application/json")
+    # Manually build the JSON data so we can add the Star logic
+    data = []
+    for project in projects:
+        starred_users = project.starred_by.all()
+        is_starred = request.user in starred_users if request.user.is_authenticated else False
+        starred_by_names = ", ".join([u.username for u in starred_users])
+
+        data.append({
+            "pk": str(project.id),
+            "fields": {
+                "title": project.title,
+                "description": project.description,
+                "tech_stack": project.tech_stack,
+                "project_url": project.project_url,
+                "project_image_url": project.project_image_url,
+                "star_count": starred_users.count(),
+                "is_starred": is_starred,
+                "starred_by_names": starred_by_names,
+            }
+        })
+
+    return JsonResponse(data, safe=False)
 
 @login_required(login_url="/login/")
 @require_http_methods(["GET", "POST"])
@@ -298,4 +319,23 @@ def is_editor(user):
         user.is_authenticated
         and user.groups.filter(name="Editor").exists()
     )
+
+@require_POST
+def create_project_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Only the portfolio owner can add projects."},
+            status=403,
+        )
+
+    form = ProjectForm(request.POST)
+    if form.is_valid():
+        project = form.save()
+        return JsonResponse(
+            {"message": "Project added successfully.", "pk": str(project.id)},
+            status=201,
+        )
+
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
+
 # Create your views here.
