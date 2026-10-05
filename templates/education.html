@@ -1,94 +1,42 @@
-
-    {% extends 'base.html' %}
-    {% block meta %}
-    <title>Education - {{ name }}</title>
-    {% endblock meta %}
-    {% block content %}
-    <main>
+{% extends 'base.html' %}
+{% load static %}
+{% block meta %}<title>Education - {{ name }}</title>{% endblock meta %}
+{% block content %}
+<main>
     <section class="education-page" id="education" aria-labelledby="education-title">
         <div class="container">
-            <div class = "section-heading">
+            <div class="section-heading">
                 <div class="education-heading-content">
                     <p class="section-kicker">My journey so far</p>
                     <div class="education-heading-row">
                         <h2 id="education-title">Education</h2>
                         {% if user.is_superuser %}
-                        <a href="{% url 'main:create_education' %}"
-                           class="button project-add-button">
-                            <span aria-hidden="true">+</span>
-                            Tambah Education
-                        </a>
+                        <button type="button" class="button project-add-button" popovertarget="add-education-modal">
+                            <span aria-hidden="true">+</span> Tambah Education
+                        </button>
                         {% endif %}
                     </div>
                     <p>My academic journey, from what I am studying now to where it began.</p>
                 </div>
             </div>
-            <ol class="education-timeline">
-                {% for education in education_list %}
-                <li class="timeline-item{% if not education.end_year %} is-current{% endif %}">
-                    <div class="timeline-pin" aria-hidden="true"></div>
-                    <article class = "timeline-card">
-                        {% if education.thumbnail%}
-                        <div class = "timeline-card-thumbnail">
-                            <img
-                                class="timeline-logo"
-                                src="{{ education.thumbnail }}"
-                                alt="{{ education.institution }} logo"
-                                width="64"
-                                height="64"
-                                loading="lazy"
-                            >
-                        </div>
-                        {% endif %}
-                        <div class = "timeline-card-content">
-                        <div class = "timeline-card-heading">
-                            <div>
-                                {% if not education.end_year%}
-                                    <span class="current-label">Currently Studying</span>
-                                {% endif %}
-                                <h2>{{education.title}}</h2>
-                                <p class = "timeline-institution">{{education.institution}}</p>
-                            </div>
-                            <p class="timeline-period">
-                                    {{ education.start_year }} &ndash; {% if education.end_year %}{{ education.end_year }}{% else %}Present{% endif %}
-                            </p>
-                        </div>
-
-                        <div class = "timeline-card-body">
-
-                            <div>
-                                <p class = "timeline-major">
-                                    {{education.major}}
-                                </p>
-                                {% if education.description_items%}
-                                <ul class = "timeline-details">
-                                    {%for item in education.description_items%}
-                                    <li>{{item}}</li>
-                                    {%endfor%}
-                                </ul>
-                                {%endif%}
-                            </div>
-                        </div>
-                        <div class="education-card-actions">
-                            {% if user.is_superuser or is_editor %}
-                            <a href="{% url 'main:update_education' education.id %}"
-                               class="button education-update-button">Update</a>
-                            {% endif %}
-                            
-                            {% if user.is_superuser %}
-                                {% include "components/education_delete_modal.html" with education=education %}
-                            {% endif %}
-                            {% include "components/education_star.html" with education=education %}
-                        </div>
-                        
-                        </div>
-                    </article>
-                </li>
-                {% empty %}
-                    <p class="empty-state">No education has been added yet.</p>
-            {% endfor %}
-            </ol>
+            <div class="project-search education-search">
+                <label for="education-search">Cari jenjang pendidikan</label>
+                <input id="education-search" class="project-search__input" type="search"
+                       placeholder="Contoh: S1 atau SMA" value="{{ title_query }}" autocomplete="off">
+            </div>
+            <div id="education-feedback" class="education-feedback" role="status" aria-live="polite">
+                <p id="education-state-text">Memuat data pendidikan...</p>
+                <button id="education-retry" class="button button-secondary" type="button" hidden>Coba lagi</button>
+            </div>
+            <ol id="education-list" class="education-timeline" aria-busy="true" hidden></ol>
+            <noscript>Aktifkan JavaScript untuk memuat daftar Education.</noscript>
         </div>
     </section>
 </main>
+{% if user.is_superuser %}
+    {% include 'components/education_form_modal.html' %}
+    {% include 'components/education_ajax_delete_modal.html' %}
+{% endif %}
+{{ education_config|json_script:'education-config' }}
+<script src="{% static 'js/education.js' %}" defer></script>
 {% endblock content %}

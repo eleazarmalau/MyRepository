@@ -1,0 +1,19 @@
+<div id="delete-education-modal" class="project-delete-modal" popover="auto" role="dialog"
+     aria-labelledby="delete-education-title">
+    <button type="button" class="project-delete-modal__backdrop" popovertarget="delete-education-modal"
+            popovertargetaction="hide" aria-label="Tutup konfirmasi"></button>
+    <div class="project-delete-modal__content">
+        <button type="button" class="project-delete-modal__close" popovertarget="delete-education-modal"
+                popovertargetaction="hide" aria-label="Tutup konfirmasi">×</button>
+        <h2 id="delete-education-title">Hapus Education?</h2>
+        <p>Hapus <strong id="delete-education-name"></strong>? Data yang dihapus tidak dapat dikembalikan.</p>
+        <form id="education-delete-form" method="post">
+            {% csrf_token %}
+            <div class="project-delete-modal__actions">
+                <button type="button" class="button button-secondary" popovertarget="delete-education-modal"
+                        popovertargetaction="hide">Batal</button>
+                <button type="submit" class="button education-delete-confirm-button">Ya, Hapus</button>
+            </div>
+        </form>
+    </div>
+</div>
