@@ -810,7 +810,7 @@ a:focus-visible{
     gap: 12px;
 }
 
-.project-content h2 {
+.project-card h2 {
     margin: 0.5rem 0;
     font-size: 1.5rem;
 }
@@ -833,7 +833,7 @@ a:focus-visible{
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.project-grid .experience-card {
+.project-grid .project-card {
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -1238,6 +1238,29 @@ a:focus-visible{
     border: none;
     box-shadow: none;
 }
+
+.education-search {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    max-width: 540px;
+}
+.education-search label { font-weight: 600; }
+.education-feedback {
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    margin-bottom: 1.5rem;
+}
+#education [hidden], #education-form [hidden] { display: none !important; }
+#education-state-text { margin: 0 0 0.75rem; }
+#education button:disabled, #education-form button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+#education-form [aria-invalid="true"] { border-color: #a33131; }
 
 @media (max-width: 600px) {
     .project-form-modal {

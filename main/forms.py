@@ -63,14 +63,6 @@ class ProjectForm(ModelForm):
     def clean_description(self):
         return strip_tags(self.cleaned_data["description"]).strip()
 
-# id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-#     title = models.CharField(max_length=255)
-#     institution = models.CharField(max_length = 255)
-#     major = models.CharField(max_length = 255)
-#     description = models.TextField()
-#     thumbnail = models.CharField(max_length=500,blank=True, null=True)
-#     start_year = models.PositiveSmallIntegerField()
-#     end_year=
 class EducationForm(ModelForm):
     class Meta:
         model = Education
@@ -136,14 +128,36 @@ class EducationForm(ModelForm):
             ),
         }
 
+def _clean_text_field(self, field_name):
+        value = strip_tags(self.cleaned_data[field_name]).strip()
+        if not value:
+            raise ValidationError("Isian tidak boleh kosong atau hanya berisi tag HTML.")
+        return value
+
+def clean_title(self):
+    return self._clean_text_field("title")
+
+def clean_institution(self):
+    return self._clean_text_field("institution")
+
+def clean_major(self):
+    return self._clean_text_field("major")
+
+def clean_description(self):
+    return self._clean_text_field("description")
+
+def clean_thumbnail(self):
+        value = self.cleaned_data.get("thumbnail")
+        if value and not value.lower().startswith(("http://", "https://")):
+            raise ValidationError("URL gambar harus menggunakan HTTP atau HTTPS.")
+        return value
+
 def clean(self):
         cleaned_data = super().clean()
         start_year = cleaned_data.get("start_year")
         end_year = cleaned_data.get("end_year")
-
         if start_year is not None and end_year is not None and end_year < start_year:
             self.add_error("end_year", "Tahun selesai tidak boleh sebelum tahun mulai.")
-
         return cleaned_data
 
 class ExperienceForm(ModelForm):
