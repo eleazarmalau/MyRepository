@@ -13,11 +13,10 @@ from django.core.exceptions import PermissionDenied
 from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
-from main.forms import ProjectForm, EducationForm
+from main.forms import ProjectForm, EducationForm, ExperienceForm
 from main.models import Experience
 from main.models import Education
 from main.models import Project
-from main.forms import ProjectForm
 
 import datetime
 def show_main(request):
@@ -34,6 +33,7 @@ def show_experience(request):
     context = {
         "name" : "Isybal Sama Eleazar Malau",
         "experience_list" : Experience.objects.all(),
+        "is_editor": is_editor(request.user),
     }
     return render(request, "experience.html", context)
 
@@ -62,7 +62,6 @@ def show_education(request):
     }
     return render(request, "education.html", context)
 
-...
 def show_projects(request):
     title_query = request.GET.get("title", "").strip()
     projects = Project.objects.prefetch_related("starred_by").all()
@@ -338,4 +337,83 @@ def create_project_ajax(request):
 
     return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
+
+@login_required(login_url="/login/")
+@require_http_methods(["GET", "POST"])
+def create_experience(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+    form = ExperienceForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Pengalaman baru berhasil ditambahkan!")
+        return redirect("main:show_experience")
+
+    context = {
+        "name": "Isybal Sama Eleazar Malau",
+        "form": form,
+    }
+    return render(request, "experience_form.html", context)
+
+def get_experiences_json(request):
+    experiences = Experience.objects.all()
+
+    experiences_json = serializers.serialize(
+        "json",
+        experiences,
+        fields=[
+            "title",
+            "place",
+            "description",
+            "category",
+            "thumbnail",
+            "started_at",
+            "ended_at",
+            "created_at",
+            "updated_at",
+        ],
+    )
+
+    return HttpResponse(
+        experiences_json,
+        content_type="application/json",
+    )
+
+@login_required(login_url="/login/")
+@require_http_methods(["GET", "POST"])
+def update_experience(request, experience_id):
+    if not (
+        request.user.is_superuser
+        or is_editor(request.user)
+    ):
+        raise PermissionDenied
+    experience = get_object_or_404(Experience, pk=experience_id)
+    form = EducationForm(
+        request.POST if request.method == "POST" else None,
+        instance=experience,
+    )
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Data pengalaman berhasil diperbarui!")
+        return redirect("main:show_experience")
+
+    context = {
+        "name": "Isybal Sama Eleazar Malau",
+        "form": form,
+        "experience": experience,
+        "is_edit": True,
+    }
+    return render(request, "experience_form.html", context)
+
+@login_required(login_url="/login/")
+@require_POST
+def delete_experience(request, experience_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+    experience = get_object_or_404(Experience, pk=experience_id)
+    experience.delete()
+    messages.success(request, "Pengalaman berhasil dihapus!")
+    return redirect("main:show_experience")
 # Create your views here.
