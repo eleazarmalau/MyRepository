@@ -10,8 +10,10 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required  
 from django.core.exceptions import PermissionDenied
+from django.urls import reverse
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST, require_http_methods
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from django.http import JsonResponse
 from main.forms import ProjectForm, EducationForm, ExperienceForm
 from main.models import Experience
@@ -37,28 +39,20 @@ def show_experience(request):
     }
     return render(request, "experience.html", context)
 
+@ensure_csrf_cookie
 def show_education(request):
-    json_response = get_educations_json(request)
-    title_query = request.GET.get("title", "").strip()
-    educations = serializers.deserialize(
-            "json",
-            json_response.content.decode("utf-8"),
-        )
-    educations = [education.object for education in educations]
-    for education in educations:
-        education.star_count = education.starred_by.count()
-
-        education.is_starred = (
-            request.user.is_authenticated
-            and education.starred_by.filter(
-                pk=request.user.pk
-            ).exists()
-        )
+    # Render only the skeleton. The browser fetches the Education records.
     context = {
-        "name" : "Isybal Sama Eleazar Malau",
-        "education_list" : educations,
-        "title_query": title_query,
+        "name": "Isybal Sama Eleazar Malau",
+        "title_query": request.GET.get("title", "").strip(),
+        "form": EducationForm() if request.user.is_superuser else None,
         "is_editor": is_editor(request.user),
+        "education_config": {
+            "listUrl": reverse("main:get_educations_json"),
+            "createUrl": reverse("main:create_education_ajax"),
+            "loginUrl": reverse("main:login") + "?next=" + reverse("main:show_education"),
+            "isAuthenticated": request.user.is_authenticated,
+        },
     }
     return render(request, "education.html", context)
 
@@ -235,9 +229,10 @@ def toggle_education_star(request, education_id):
 
     return redirect("main:show_education")
 
+@require_GET
 def get_educations_json(request):
     title_query = request.GET.get("title", "").strip()
-    educations = Education.objects.order_by(
+    educations = Education.objects.prefetch_related("starred_by").order_by(
         Case(
             When(end_year__isnull=True, then=Value(0)),
             default=Value(1),
@@ -246,22 +241,59 @@ def get_educations_json(request):
         "-start_year",
         "institution",
     )
-
     if title_query:
         educations = educations.filter(title__icontains=title_query)
 
-    educations_json = serializers.serialize("json", educations,fields=[
-        "title",
-        "institution",
-        "major",
-        "description",
-        "thumbnail",
-        "start_year",
-        "end_year",
-        "created_at",
-        "updated_at",
-    ],)
-    return HttpResponse(educations_json, content_type="application/json")
+    can_update = request.user.is_superuser or is_editor(request.user)
+    data = []
+    for education in educations:
+        # Reuse the prefetched relation; do not publish usernames or user IDs.
+        starred_users = list(education.starred_by.all())
+        urls = {}
+        if can_update:
+            urls["update"] = reverse("main:update_education", args=[education.pk])
+        if request.user.is_superuser:
+            urls["delete"] = reverse("main:delete_education", args=[education.pk])
+        if request.user.is_authenticated:
+            urls["star"] = reverse("main:toggle_education_star", args=[education.pk])
+        data.append({
+            "model": "main.education",
+            "pk": str(education.pk),
+            "fields": {
+                "title": education.title,
+                "institution": education.institution,
+                "major": education.major,
+                "description": education.description,
+                "thumbnail": education.thumbnail,
+                "start_year": education.start_year,
+                "end_year": education.end_year,
+                "created_at": education.created_at.isoformat(),
+                "updated_at": education.updated_at.isoformat(),
+                "star_count": len(starred_users),
+                "is_starred": request.user.is_authenticated and any(
+                    user.pk == request.user.pk for user in starred_users
+                ),
+            },
+            "urls": urls,
+        })
+    return JsonResponse(data, safe=False)
+
+@require_POST
+def create_education_ajax(request):
+    # Return JSON 403 even for visitors, rather than redirecting to a login page.
+    if not request.user.is_superuser:
+        return JsonResponse({"message": "Hanya owner yang boleh menambah pendidikan."}, status=403)
+    form = EducationForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({
+            "message": "Periksa kembali isian form.",
+            "errors": form.errors.get_json_data(),
+        }, status=400)
+    education = form.save()
+    return JsonResponse({
+        "message": "Pendidikan berhasil ditambahkan!",
+        "pk": str(education.pk),
+    }, status=201)
 
 def register(request):
     form = UserCreationForm(request.POST or None)
