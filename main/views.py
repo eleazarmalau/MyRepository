@@ -214,6 +214,8 @@ def delete_education(request, education_id):
         raise PermissionDenied
     education = get_object_or_404(Education, pk=education_id)
     education.delete()
+    if request.headers.get("Accept") == "application/json":
+        return JsonResponse({"message": "Pendidikan berhasil dihapus!"})
     messages.success(request, "Pendidikan berhasil dihapus!")
     return redirect("main:show_education")
 
@@ -221,12 +223,19 @@ def delete_education(request, education_id):
 @require_POST
 def toggle_education_star(request, education_id):
     education = get_object_or_404(Education, pk=education_id)
-
     if education.starred_by.filter(pk=request.user.pk).exists():
         education.starred_by.remove(request.user)
+        is_starred = False
     else:
         education.starred_by.add(request.user)
+        is_starred = True
 
+    if request.headers.get("Accept") == "application/json":
+        return JsonResponse({
+            "message": "Star berhasil diperbarui.",
+            "star_count": education.starred_by.count(),
+            "is_starred": is_starred,
+        })
     return redirect("main:show_education")
 
 @require_GET
