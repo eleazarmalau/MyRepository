@@ -266,3 +266,148 @@ https://chatgpt.com/share/6aba8537-72ec-83ec-902a-9a4e19786b9f
 
 2. Pengkritisan Terhadap AI
 Banyak hasil prompt yang diberikan tidak konsisten terutama dalam bagian CSSnya sehingga saya harus mencari sendiri permasalahannya dan menyelesaikannya sendiri, seperti prompt prompt error yang saya kirim pada akhirnya saya mengerjakannya sendiri pada akhirnya karena jawaban AI kurang jelas. Selain itu, di bagian CSS saya membuat beberapa sendiri buat pengaturannya agar sesuai dengan keinginan yang saya inginkan.
+
+# Assignment 5
+
+### Progres
+Commit 1: Adding CRUD to experience section
+Yang dikerjakan:
+- Membuat sistem CRUD ke bagian experience
+- Membuat CSSnya juga agar lebih rapih tampilannya
+
+Commit 2: Cleaning and validating education form
+Yang dikerjakan:
+- Merapikan EducationForm, termasuk field, label, dan widget untuk judul pendidikan, institusi, jurusan, deskripsi, URL gambar, serta tahun mulai dan selesai.
+- Menambahkan fungsi _clean_text_field() untuk membersihkan tag HTML menggunakan strip_tags() dan membuang spasi di awal serta akhir input.
+- Menambahkan validasi khusus melalui clean_title(), clean_institution(), clean_major(), dan clean_description().
+
+Commit 3: Change views and JSON and also added POST AJAX
+Yang dikerjakan:
+- Mengubah show_education() agar hanya merender kerangka halaman, sementara daftar Education nantinya dimuat oleh JavaScript.
+- Menambahkan @ensure_csrf_cookie agar cookie CSRF tersedia untuk request AJAX.
+- Mengirim konfigurasi endpoint daftar, tambah, login, serta status autentikasi melalui education_config.
+- Menyediakan EducationForm pada halaman hanya untuk superuser/owner.
+- Mengubah get_educations_json() agar menghasilkan JSON secara manual dan hanya menerima request GET.
+- Menambahkan pencarian berdasarkan title__icontains.
+- Mengurutkan pendidikan yang masih berlangsung terlebih dahulu, kemudian berdasarkan tahun mulai terbaru dan institusi.
+- Menggunakan prefetch_related("starred_by") untuk memuat relasi star.
+- Menambahkan star_count dan is_starred ke respons JSON tanpa membagikan identitas pemberi star.
+- Menambahkan URL aksi pada JSON sesuai role: Update untuk Editor/Owner, Hapus untuk Owner, dan Star untuk pengguna yang login.
+- Menambahkan create_education_ajax() yang menerima POST, memeriksa izin owner, memvalidasi EducationForm, lalu menyimpan data.
+
+Commit 4: Added URL for the new AJAX
+Yang dikerjakan:
+- Mengimpor view create_education_ajax.
+- Mendaftarkan endpoint education/add-ajax/ dengan nama URL create_education_ajax.
+
+Commit 5: Added new html features for the education adaptation for the AJAX including new modals
+Yang dikerjakan:
+- Menghapus loop template yang sebelumnya langsung menampilkan data dari database.
+- Menyediakan <ol id="education-list"> kosong sebagai tempat kartu yang dibuat JavaScript.
+- Menambahkan input pencarian.
+- Menambahkan area feedback untuk loading, kosong, dan error, serta tombol Coba lagi.
+- Menambahkan pesan <noscript> bagi pengguna yang menonaktifkan JavaScript.
+- Menyimpan konfigurasi dengan json_script dan memuat education.js menggunakan defer.
+- Menambahkan modal Tambah Education dengan field dari EducationForm, CSRF token, area error tiap field, serta tombol Batal dan Submit.
+- Menambahkan modal konfirmasi hapus yang menampilkan nama Education yang akan dihapus.
+- Membatasi tombol Tambah dan kedua modal tersebut agar hanya dirender untuk Owner.
+
+Commit 6: Added the javascript for education section
+- Membuat konfigurasi javascript untuk education section
+
+Commit 7: Changed the star and deletion method for education through AJAX
+- Mengubah toggle_education_star() agar mengembalikan JSON ketika request memakai header Accept: application/json.
+- Mengirim pesan, jumlah star terbaru, dan status is_starred setelah aksi star/unstar.
+- Tetap mensyaratkan login dan metode POST untuk aksi star.
+- Mengubah delete_education() agar mengembalikan JSON untuk request AJAX setelah penghapusan berhasil.
+
+Commit 8: Menambahkan update untuk projects
+- Membuat bagian update untuk projects dan sesuai dengan role-based access
+
+1. Debouncing berguna untuk menunda pemanggilan fungsi sampai tidak ada event baru selama selang waktu terentu. Jadi di implementasi ini, debouncing dibuat dengan timer 350 ms sehingga setiap input membatalkan timer sebelumnya dengan 'clearTimeout'. Hal ini berguna kalau user mengetik dengan cepat sehingga pencarian akan dilakukan setelah user selesai menuliskan apa yang sebenarnya ingin dituliskan. Hal ini membuat request dan query database berkurang dan membuat hasil lebih stabil 
+
+2. fetch itu mengembalikan Promise atau sebuah hasil yang masih ditunggu. Await fetch(url) itu menunggu respons server, lalu await.response(json) membaca data JSON-nya. Tanpa ada await, hasilnya masih Promise itu tadi dan jadinya perlu ditangani oleh fungsi baru seperti, .then() atau .catch(). await() hanya menunda kelanjutan fungsi tersebut, sehingga browser masih bisa digunakan. Status errorpun juga perlu diperiksa kembali oleh response.ok karena tidak otomatis dianggap gagal oleh fetch().
+
+3. Cross-Site Scripting terjadi ketika input tidak tepercaya dijalankan sebagai script di browser pengguna. Intinya XSS terjadi ketika input pengguna dijalankan sebagai kode berbahaya di browser. Pada fitur education sendiri, data ditampilkan menggunakan createElement dan textContent agar terbaca sebagai teks biasa. Server juga membersihkan tag HTML menggunakan strip_tags, sementara URL divalidasi untuk membatasi alamat yang digunakan.
+
+## AI Disclosure
+**1. Cakupan Penggunaan AI dan Strategi Prompt**
+
+Model yang digunakan adalah: **ChatGPT — GPT-6 Luna dan GPT-6.1 Sol.**
+
+**Prompt Strategy:** Saya menggunakan AI untuk membantu menambahkan CRUD pada section Experience dan mengimplementasikan interaktivitas AJAX pada section Education sesuai checklist Individual Assignment 5. Saya memberikan ZIP proyek, kode, screenshot, dan pesan error agar AI dapat meninjau struktur serta memberikan perubahan yang relevan. Bantuan AI mencakup penyusunan kode form, view, URL, template, CSS, JavaScript, serta pengujian dan dokumentasi.
+
+Saya meminta perubahan disampaikan secara bertahap, dengan penjelasan lokasi file dan bagian kode yang perlu diganti, agar prosesnya lebih mudah dipahami dan diterapkan. Ketika saran belum sesuai dengan tampilan yang saya inginkan atau muncul error, saya memberikan kode terbaru dan meminta pemeriksaan kembali. Saya juga meminta panduan berurutan untuk mempelajari implementasi Assignment 5.
+
+**Beberapa contoh prompt yang digunakan:**
+
+**Prompt:** “coba masukkan bagian crud untuk bagian experience dan coba sesuain aja bentuaknnya kayak yang di education”
+
+**Jawaban:** AI membantu menambahkan CRUD Experience mengikuti pola Education. Superuser dapat menambah, mengedit, dan menghapus Experience, sedangkan Editor hanya dapat mengedit. Form mencakup nama pengalaman, organisasi/perusahaan, kategori, deskripsi, thumbnail, serta waktu mulai dan selesai. AI juga menyediakan ZIP hasil perubahan dan melaporkan hasil pengujian di lingkungan pengerjaannya.
+
+**Prompt:** “kasih gw kodenya yang diganti aja dan bertahap”
+
+**Jawaban:** AI mulai memberikan perubahan per file, dimulai dari `ExperienceForm` pada `main/forms.py`. Form menggunakan `ModelForm`, mengatur label dan widget, memperbolehkan waktu selesai dikosongkan, serta memvalidasi bahwa waktu selesai tidak mendahului waktu mulai. Tahap berikutnya membahas view CRUD, URL, template form, dan tombol aksi.
+
+**Prompt:** “di kelas itu bagian category belum ada widgetsnya apakah aman?”
+
+**Jawaban:** AI menjelaskan bahwa field model yang memiliki `choices` otomatis menggunakan widget `Select` atau dropdown pada `ModelForm`. Karena itu, widget `category` tidak perlu didefinisikan secara eksplisit kecuali saya ingin menambahkan atribut atau pengaturan tampilannya.
+
+**Prompt:** “eh aku mau bikin ini juga dalam bentuk json itu loh gimana caranya biar kayak yang lain?”
+
+**Jawaban:** AI memberikan contoh fungsi `get_experiences_json()` pada `main/views.py` menggunakan `serializers.serialize()`, dengan daftar field yang ditentukan. AI juga menambahkan route `/api/experiences/` pada `main/urls.py` agar data Experience dapat diakses dalam bentuk JSON.
+
+**Prompt:** Saya mengirim traceback error saat menjalankan server setelah menambahkan form Experience.
+
+**Jawaban:** AI mengidentifikasi typo `ended-at` pada `ExperienceForm`, sementara nama field model yang benar adalah `ended_at`. AI menyarankan memperbaiki nama tersebut pada `fields`, `labels`, dan `widgets`. Perbaikan ini tidak membutuhkan migration karena tidak mengubah model.
+
+**Prompt:** “bagian started at nya selalu bilang enter a valid date/time itu kenapa?”
+
+**Jawaban:** AI menjelaskan kemungkinan ketidaksesuaian format input tanggal dengan format yang diterima form. AI menyarankan penggunaan `datetime-local`, penyesuaian `input_formats`, serta pemeriksaan posisi fungsi `__init__` agar berada di dalam kelas form. AI juga menjelaskan perbedaan `%m` untuk bulan dan `%M` untuk menit.
+
+**Prompt:** “kalo aku maunya cuman tahun aja gimana?”
+
+**Jawaban:** AI menyarankan perubahan label menjadi Tahun Mulai dan Tahun Selesai, penggunaan input angka, serta format `%Y`. Pendekatan tersebut tetap menggunakan field datetime yang sudah ada, sehingga input tahun direpresentasikan sebagai tanggal 1 Januari pada tahun tersebut. Tahun selesai tetap dapat dikosongkan untuk pengalaman yang masih berlangsung.
+
+**Prompt:** “tombol update, deletenya gak muncul tapi di cardnya itu gimana?”
+
+**Jawaban:** AI mengarahkan pemeriksaan pada context `is_editor`, kondisi role di template, dan posisi tombol. Setelah saya mengirim kode template, AI menduga tombol terpotong akibat kombinasi `min-height: 100%` pada `.card-inner` dan `overflow: hidden` pada kartu, lalu memberikan penyesuaian CSS.
+
+**Prompt:** “ih jelek gak suka aku maunya di kartunya pas udah di flip itu gimana?”
+
+**Jawaban:** AI menyesuaikan saran dengan memindahkan tombol Update dan Hapus ke sisi belakang kartu, di dalam `.experience-content`. Dialog konfirmasi hapus ditempatkan di luar kartu yang berputar, sementara tombol pembukanya tetap berada pada kartu. AI juga meminta aturan CSS sebelumnya diganti agar sesuai dengan susunan baru.
+
+**Prompt:** “itu kotak buat buttonnya bisa gak diilangin dan jadinya tu tombol update dan hapus setara sama tulisan completednya”
+
+**Jawaban:** AI menyarankan pembungkus `.experience-card-footer` yang menyatukan status Ongoing/Completed dan tombol aksi. Pengaturan Flexbox digunakan untuk menyejajarkan keduanya. Background, border, dan shadow pada pembungkus tombol dihilangkan agar tidak terlihat seperti kotak terpisah.
+
+**Prompt:** “Coba tolong kerjakan bagian individual assignment itu dan sesuai dengan checklistnya dan kasih guide dan panduan pengerjaannya ke saya dan berurutan supaya bisa dimengerti dan dipelajari juga”
+
+**Jawaban:** AI memilih Education sebagai bagian implementasi Assignment 5 karena sudah memiliki fitur star. AI menyediakan kode hasil perubahan dan panduan berurutan yang mencakup:
+- Validasi dan pembersihan input pada `EducationForm`.
+- View halaman skeleton, JSON dengan informasi star, dan endpoint POST AJAX.
+- URL, modal tambah, serta modal konfirmasi hapus.
+- JavaScript untuk fetch, pencarian dengan debounce 350 ms, loading/empty/error state, retry, dan toast.
+- Rendering menggunakan `createElement` dan `textContent`, pengiriman CSRF token, serta pembaruan daftar tanpa reload halaman.
+- Aksi star/unstar dan hapus melalui AJAX.
+- Pengujian, dokumentasi, serta panduan commit dan submission.
+
+AI melaporkan 35 tes Django lulus di lingkungan pengerjaannya, tetapi menyatakan bahwa tampilan dan perilaku modal masih perlu diperiksa melalui browser lokal.
+
+**Prompt:** Saya mengirim error `TemplateDoesNotExist: components/education_form_modal.html` dan menanyakan file modal yang belum tersedia.
+
+**Jawaban:** AI menjelaskan bahwa `education.html` sudah memanggil komponen yang belum dibuat pada proyek lokal saya. AI kemudian memberikan kode lengkap untuk `education_form_modal.html` dan `education_ajax_delete_modal.html`, serta menjelaskan bahwa keduanya harus berada di folder `templates/components/` dengan nama yang sesuai dengan `{% include %}`.
+
+**Link Share Chat:**
+
+https://chatgpt.com/share/6ac3d1c0-4760-83ec-a844-4b1db0ed6c95
+
+**2. Pengkritisan Terhadap AI**
+
+Jawaban AI tidak selalu langsung sesuai dengan kebutuhan saya. Pada awalnya, AI memberikan hasil dalam bentuk ZIP, sementara saya membutuhkan potongan kode dan penjelasan bertahap agar dapat memahami perubahan. Penyampaian tahap juga sempat berhenti satu per satu, sehingga saya perlu memperjelas bentuk panduan yang saya inginkan.
+
+Dalam bagian tampilan, saran awal menempatkan tombol di luar bagian kartu yang berputar dan menambahkan pembungkus yang tidak sesuai dengan desain saya. Saya kemudian memberikan feedback agar tombol berada pada sisi belakang kartu dan sejajar dengan status Completed. Hal ini menunjukkan bahwa hasil AI perlu ditinjau kembali berdasarkan tampilan nyata dan preferensi desain saya.
+
+Saat menerapkan AJAX Education, muncul error karena template memanggil komponen modal yang belum tersedia di proyek lokal. Saya perlu meminta penjelasan dan kode komponen tersebut secara eksplisit. Karena itu, saya tidak cukup hanya mengikuti satu potongan kode, tetapi perlu memeriksa keterkaitan form, view, URL, template, dan JavaScript.
+
+Saya juga membedakan laporan pengujian AI dari hasil pengujian pada proyek lokal. Tes yang dilaporkan lulus oleh AI tidak otomatis membuktikan bahwa seluruh tampilan, modal, dan interaksi sudah berjalan sesuai kebutuhan saya di browser.
