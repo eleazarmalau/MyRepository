@@ -5,6 +5,7 @@ psycopg2-binary
 requests
 urllib3
 python-dotenv
+djangorestframework~=3.18.3
 
 # from main.models import Experience
 # from django.templatetags.static import static

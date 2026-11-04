@@ -70,28 +70,41 @@ class EducationViewTests(TestCase):
         )
 
     def test_education_url_is_accessible_and_uses_correct_template(self):
-        response = self.client.get(reverse("main:show_education"))
+        response = self.client.get(
+            reverse("main:show_education")
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "education.html")
+        self.assertContains(response, 'id="education-list"')
+        self.assertContains(response, "js/education.js")
 
-    def test_education_model_data_appears_in_response(self):
-        response = self.client.get(reverse("main:show_education"))
-
-        self.assertContains(response, self.education.title)
-        self.assertContains(response, self.education.institution)
-        self.assertContains(response, self.education.major)
-        self.assertContains(response, "GPA = 3.59")
-        self.assertContains(response, "2025")
-        self.assertContains(response, "Present")
-
-    def test_empty_education_page_shows_empty_message(self):
-        Education.objects.all().delete()
-
-        response = self.client.get(reverse("main:show_education"))
+    def test_education_model_data_appears_in_api(self):
+        response = self.client.get(reverse("main:get_educations_json"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "No education has been added yet.")
+
+        items = response.json()
+        self.assertEqual(len(items), 1)
+
+        fields = items[0]["fields"]
+        self.assertEqual(fields["title"], self.education.title)
+        self.assertEqual(fields["institution"], self.education.institution)
+        self.assertEqual(fields["major"], self.education.major)
+        self.assertEqual(fields["description"], "GPA = 3.59")
+        self.assertEqual(fields["start_year"], 2025)
+        self.assertIsNone(fields["end_year"])
+
+    
+    def test_empty_education_api_returns_empty_list(self):
+        Education.objects.all().delete()
+
+        response = self.client.get(
+            reverse("main:get_educations_json")
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), [])
 
 class EducationAuthorizationTests(TestCase):
     @classmethod
@@ -126,6 +139,9 @@ class EducationAuthorizationTests(TestCase):
         self.list_url = reverse("main:show_education")
         self.json_url = reverse("main:get_educations_json")
         self.create_url = reverse("main:create_education")
+        self.create_ajax_url = reverse(
+            "main:create_education_ajax"
+        )
 
         self.update_url = reverse(
             "main:update_education",
@@ -389,6 +405,8 @@ class EducationAuthorizationTests(TestCase):
             "end_year",
             "created_at",
             "updated_at",
+            "star_count",
+            "is_starred",
         }
 
         self.assertEqual(set(fields), expected_fields)
@@ -409,15 +427,42 @@ class EducationAuthorizationTests(TestCase):
         )
         self.assertEqual(response.json(), [])
 
-    def test_action_buttons_follow_user_role(self):
+    def test_action_urls_follow_user_role(self):
         roles = [
-            (None, False, False),
-            (self.regular, False, False),
-            (self.editor, True, False),
-            (self.owner, True, True),
+            (None, False, False, False),
+            (self.regular, False, False, True),
+            (self.editor, True, False, True),
+            (self.owner, True, True, True),
         ]
 
-        for user, can_update, can_create_delete in roles:
+        for user, can_update, can_delete, can_star in roles:
+            with self.subTest(
+                user=user.username if user else "visitor"
+            ):
+                self.client.logout()
+
+                if user:
+                    self.client.force_login(user)
+
+                response = self.client.get(self.json_url)
+                self.assertEqual(response.status_code, 200)
+
+                urls = response.json()[0]["urls"]
+
+                self.assertEqual("update" in urls, can_update,)
+                self.assertEqual("delete" in urls, can_delete,)
+                self.assertEqual("star" in urls, can_star,)
+
+
+    def test_create_ajax_interface_is_owner_only(self):
+        roles = [
+            (None, False),
+            (self.regular, False),
+            (self.editor, False),
+            (self.owner, True),
+        ]
+
+        for user, can_create in roles:
             with self.subTest(
                 user=user.username if user else "visitor"
             ):
@@ -432,15 +477,17 @@ class EducationAuthorizationTests(TestCase):
                 html = response.content.decode()
 
                 self.assertEqual(
-                    f'href="{self.create_url}"' in html,
-                    can_create_delete,
+                    'popovertarget="add-education-modal"' in html,
+                    can_create,
                 )
                 self.assertEqual(
-                    f'href="{self.update_url}"' in html,
-                    can_update,
+                    'id="education-form"' in html,
+                    can_create,
                 )
+
+                config = response.context["education_config"]
                 self.assertEqual(
-                    f'action="{self.delete_url}"' in html,
-                    can_create_delete,
+                    config["createUrl"],
+                    self.create_ajax_url,
                 )
 # Create your tests here.
