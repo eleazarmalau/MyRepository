@@ -148,7 +148,9 @@ class EducationAPITest(APITestCase):
         cls.regular = User.objects.create_user(
             username="education-user", password="test-password",
         )
-        cls.editor = User.objects.create_user(username="education-editor")
+        cls.editor = User.objects.create_user(
+            username="education-editor", password="test-password",
+        )
         cls.editor.groups.add(Group.objects.create(name="Editor"))
         cls.education = Education.objects.create(
             title="S1 Sistem Informasi", institution="Universitas Indonesia",
@@ -202,7 +204,8 @@ class EducationAPITest(APITestCase):
         )
 
     def test_guest_and_regular_user_cannot_modify_education(self):
-        before = list(Education.objects.values())
+        self.education.starred_by.add(self.regular)
+        before = self._education_state()
         for user in (None, self.regular):
             self.client.force_authenticate(user=user)
             for method, url, payload in (
@@ -214,18 +217,19 @@ class EducationAPITest(APITestCase):
                 with self.subTest(user=user, method=method):
                     response = getattr(self.client, method)(url, payload, format="json")
                     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-                    self.assertEqual(list(Education.objects.values()), before)
+                    self.assertEqual(self._education_state(), before)
 
     def test_editor_can_patch_and_put_but_cannot_create_or_delete(self):
         self.client.force_authenticate(user=self.editor)
-        before = list(Education.objects.values())
+        self.education.starred_by.add(self.regular)
+        before = self._education_state()
         for method, url, payload in (
             ("post", self.list_url, self.payload),
             ("delete", self.detail_url, {}),
         ):
             response = getattr(self.client, method)(url, payload, format="json")
             self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-            self.assertEqual(list(Education.objects.values()), before)
+            self.assertEqual(self._education_state(), before)
 
         response = self.client.patch(self.detail_url, {"title": "<b>Updated</b>"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -244,6 +248,7 @@ class EducationAPITest(APITestCase):
         self.assertEqual(self.education.title, self.payload["title"])
         self.assertEqual(self.education.start_year, 2030)
         self.assertIsNone(self.education.end_year)
+        self.assertEqual(list(self.education.starred_by.all()), [self.regular])
 
     def test_owner_can_create_update_and_delete(self):
         self.client.force_authenticate(user=self.owner)
@@ -270,6 +275,8 @@ class EducationAPITest(APITestCase):
 
     def test_invalid_creation_returns_field_errors_without_saving(self):
         self.client.force_authenticate(user=self.owner)
+        self.education.starred_by.add(self.regular)
+        before = self._education_state()
         for changes, field in (
             ({"title": "<b></b>"}, "title"),
             ({"institution": "   "}, "institution"),
@@ -280,20 +287,23 @@ class EducationAPITest(APITestCase):
                 response = self.client.post(self.list_url, {**self.payload, **changes}, format="json")
                 self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
                 self.assertIn(field, response.data)
-                self.assertEqual(Education.objects.count(), 1)
+                self.assertEqual(self._education_state(), before)
 
     def test_invalid_partial_year_updates_do_not_change_database(self):
         self.client.force_authenticate(user=self.editor)
-        before = list(Education.objects.values())
+        self.education.starred_by.add(self.regular)
+        before = self._education_state()
         for payload in ({"start_year": 2030}, {"end_year": 2024}):
             with self.subTest(payload=payload):
                 response = self.client.patch(self.detail_url, payload, format="json")
                 self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
                 self.assertIn("end_year", response.data)
-                self.assertEqual(list(Education.objects.values()), before)
+                self.assertEqual(self._education_state(), before)
 
     def test_missing_education_returns_404(self):
         self.client.force_authenticate(user=self.owner)
+        self.education.starred_by.add(self.regular)
+        before = self._education_state()
         missing_id = uuid.uuid4()
         detail_url = reverse("api:education-detail", args=[missing_id])
         star_url = reverse("api:education-star", args=[missing_id])
@@ -305,12 +315,14 @@ class EducationAPITest(APITestCase):
             with self.subTest(method=method, url=url):
                 response = getattr(self.client, method)(url, payload, format="json")
                 self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(Education.objects.count(), 1)
+                self.assertEqual(self._education_state(), before)
 
     def test_guest_star_is_rejected_without_changing_relation(self):
+        self.education.starred_by.add(self.owner)
+        before = self._education_state()
         response = self.client.post(self.star_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(self.education.starred_by.count(), 0)
+        self.assertEqual(self._education_state(), before)
 
     def test_authenticated_roles_can_toggle_only_their_own_star(self):
         for user in (self.regular, self.editor, self.owner):
@@ -351,7 +363,8 @@ class EducationAPITest(APITestCase):
     def test_session_writes_without_csrf_are_rejected(self):
         client = APIClient(enforce_csrf_checks=True)
         self.assertTrue(client.login(username="education-owner", password="test-password"))
-        before = list(Education.objects.values())
+        self.education.starred_by.add(self.editor)
+        before = self._education_state()
         for method, url, payload in (
             ("post", self.list_url, self.payload),
             ("put", self.detail_url, self.payload),
@@ -361,12 +374,14 @@ class EducationAPITest(APITestCase):
             with self.subTest(method=method, url=url):
                 response = getattr(client, method)(url, payload, format="json")
                 self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-                self.assertEqual(list(Education.objects.values()), before)
-                self.assertEqual(self.education.starred_by.count(), 0)
+                self.assertIn("CSRF", str(response.data["detail"]))
+                self.assertEqual(self._education_state(), before)
         client.logout()
         self.assertTrue(client.login(username="education-user", password="test-password"))
-        self.assertEqual(client.post(self.star_url).status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(self.education.starred_by.count(), 0)
+        response = client.post(self.star_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("CSRF", str(response.data["detail"]))
+        self.assertEqual(self._education_state(), before)
 
     def test_browsable_api_and_session_writes_with_csrf(self):
         client = APIClient(enforce_csrf_checks=True)
@@ -380,16 +395,157 @@ class EducationAPITest(APITestCase):
             self.list_url, self.payload, format="json", HTTP_X_CSRFTOKEN=token,
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        detail_url = reverse("api:education-detail", args=[response.data["id"]])
+        education = Education.objects.get(pk=response.data["id"])
+        self.assertEqual(education.title, self.payload["title"])
+        detail_url = reverse("api:education-detail", args=[education.pk])
         response = client.patch(
             detail_url, {"title": "With CSRF"}, format="json", HTTP_X_CSRFTOKEN=token,
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        education.refresh_from_db()
+        self.assertEqual(education.title, "With CSRF")
+        response = client.put(
+            detail_url, self.payload, format="json", HTTP_X_CSRFTOKEN=token,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        education.refresh_from_db()
+        self.assertEqual(education.title, self.payload["title"])
         response = client.post(self.star_url, HTTP_X_CSRFTOKEN=token)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(self.education.starred_by.filter(pk=self.owner.pk).exists())
         response = client.delete(detail_url, HTTP_X_CSRFTOKEN=token)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.content, b"")
+        self.assertFalse(Education.objects.filter(pk=education.pk).exists())
+
+    def test_staff_without_editor_group_cannot_modify_education(self):
+        self.regular.is_staff = True
+        self.regular.save(update_fields=["is_staff"])
+        self.client.force_authenticate(user=self.regular)
+        self.education.starred_by.add(self.regular)
+        before = self._education_state()
+        for method, url, payload in (
+            ("post", self.list_url, self.payload),
+            ("put", self.detail_url, self.payload),
+            ("patch", self.detail_url, {"title": "Staff edit"}),
+            ("delete", self.detail_url, {}),
+        ):
+            with self.subTest(method=method):
+                response = getattr(self.client, method)(url, payload, format="json")
+                self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+                self.assertEqual(self._education_state(), before)
+
+    def test_star_state_is_personal_and_unstar_preserves_other_users(self):
+        self.education.starred_by.add(self.regular)
+        self.client.force_authenticate(user=self.editor)
+        response = self.client.post(self.star_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["star_count"], 2)
+        for user, expected in (
+            (None, False), (self.regular, True), (self.editor, True), (self.owner, False),
+        ):
+            self.client.force_authenticate(user=user)
+            for url in (self.list_url, self.detail_url):
+                with self.subTest(user=user, url=url):
+                    response = self.client.get(url)
+                    self.assertEqual(response.status_code, status.HTTP_200_OK)
+                    item = response.data[0] if url == self.list_url else response.data
+                    self.assertEqual(item["is_starred"], expected)
+                    self.assertEqual(item["star_count"], 2)
+                    for field in ("starred_by", "starred_by_names", "email", "password"):
+                        self.assertNotIn(field, item)
+        self.client.force_authenticate(user=self.editor)
+        response = self.client.post(self.star_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data["is_starred"])
+        self.assertEqual(response.data["star_count"], 1)
+        self.assertEqual(list(self.education.starred_by.all()), [self.regular])
+
+    def test_api_write_payload_cannot_override_star_fields_or_user_relations(self):
+        self.client.force_authenticate(user=self.owner)
+        forged = {
+            "star_count": 99, "is_starred": True, "starred_by": [self.owner.pk],
+        }
+        response = self.client.post(self.list_url, {**self.payload, **forged}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        education = Education.objects.get(pk=response.data["id"])
+        self.assertEqual(education.starred_by.count(), 0)
+        self.assertEqual(response.data["star_count"], 0)
+        self.assertFalse(response.data["is_starred"])
+
+        self.education.starred_by.add(self.regular)
+        response = self.client.patch(self.detail_url, {
+            **forged, "title": "Updated without changing stars",
+        }, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.education.refresh_from_db()
+        self.assertEqual(self.education.title, "Updated without changing stars")
+        self.assertEqual(list(self.education.starred_by.all()), [self.regular])
+        self.assertEqual(response.data["star_count"], 1)
+        self.assertFalse(response.data["is_starred"])
+
+    def test_editor_session_with_csrf_can_edit_but_cannot_create_or_delete(self):
+        client = APIClient(enforce_csrf_checks=True)
+        self.assertTrue(client.login(username="education-editor", password="test-password"))
+        response = client.get(self.detail_url, HTTP_ACCEPT="text/html")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        token = client.cookies["csrftoken"].value
+        for method, payload in (
+            ("put", self.payload), ("patch", {"title": "Editor session edit"}),
+        ):
+            with self.subTest(method=method):
+                response = getattr(client, method)(
+                    self.detail_url, payload, format="json", HTTP_X_CSRFTOKEN=token,
+                )
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                self.education.refresh_from_db()
+                self.assertEqual(self.education.title, payload["title"])
+        before = self._education_state()
+        for method, url, payload in (
+            ("post", self.list_url, self.payload), ("delete", self.detail_url, {}),
+        ):
+            with self.subTest(method=method):
+                response = getattr(client, method)(
+                    url, payload, format="json", HTTP_X_CSRFTOKEN=token,
+                )
+                self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+                self.assertNotIn("CSRF", str(response.data["detail"]))
+                self.assertEqual(self._education_state(), before)
+
+    def test_regular_session_with_csrf_can_star_but_cannot_modify_education(self):
+        client = APIClient(enforce_csrf_checks=True)
+        self.assertTrue(client.login(username="education-user", password="test-password"))
+        response = client.get(self.list_url, HTTP_ACCEPT="text/html")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        token = client.cookies["csrftoken"].value
+        for expected in (True, False):
+            response = client.post(self.star_url, HTTP_X_CSRFTOKEN=token)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data["is_starred"], expected)
+            self.assertEqual(self.education.starred_by.filter(pk=self.regular.pk).exists(), expected)
+        before = self._education_state()
+        for method, url, payload in (
+            ("post", self.list_url, self.payload),
+            ("put", self.detail_url, self.payload),
+            ("patch", self.detail_url, {"title": "Regular session edit"}),
+            ("delete", self.detail_url, {}),
+        ):
+            with self.subTest(method=method):
+                response = getattr(client, method)(
+                    url, payload, format="json", HTTP_X_CSRFTOKEN=token,
+                )
+                self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+                self.assertNotIn("CSRF", str(response.data["detail"]))
+                self.assertEqual(self._education_state(), before)
+
+    def _education_state(self):
+        # Include the join table so rejected requests cannot silently change stars.
+        return (
+            list(Education.objects.order_by("id").values()),
+            list(Education.starred_by.through.objects.order_by(
+                "education_id", "user_id",
+            ).values_list("education_id", "user_id")),
+        )
 
 
 class EducationSerializerTests(APITestCase):
