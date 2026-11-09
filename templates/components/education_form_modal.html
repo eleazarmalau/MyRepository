@@ -6,7 +6,7 @@
         <button type="button" class="project-form-modal__close" popovertarget="add-education-modal"
                 popovertargetaction="hide" aria-label="Tutup form">×</button>
         <h2 id="add-education-title">Tambah Education</h2>
-        <form id="education-form" method="post" action="{% url 'main:create_education_ajax' %}" class="project-form">
+        <form id="education-form" method="post" action="{% url 'api:education-list' %}" class="project-form">
             {% csrf_token %}
             <p class="form-error" data-error-field="__all__" role="alert" hidden></p>
             {% for field in form %}

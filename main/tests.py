@@ -157,10 +157,6 @@ class EducationAuthorizationTests(TestCase):
         self.list_url = reverse("main:show_education")
         self.json_url = reverse("main:get_educations_json")
         self.create_url = reverse("main:create_education")
-        self.create_ajax_url = reverse(
-            "main:create_education_ajax"
-        )
-
         self.update_url = reverse(
             "main:update_education",
             args=[self.education.pk],
@@ -488,8 +484,8 @@ class EducationAuthorizationTests(TestCase):
                 config = page.context["education_config"]
                 for key, allowed, route in (
                     ("updateUrlTemplate", can_update, "main:update_education"),
-                    ("deleteUrlTemplate", can_delete, "main:delete_education"),
-                    ("starUrlTemplate", can_star, "main:toggle_education_star"),
+                    ("deleteUrlTemplate", can_delete, "api:education-detail"),
+                    ("starUrlTemplate", can_star, "api:education-star"),
                 ):
                     if allowed:
                         self.assertEqual(
@@ -501,7 +497,7 @@ class EducationAuthorizationTests(TestCase):
                     else:
                         self.assertIsNone(config[key])
 
-    def test_create_ajax_interface_is_owner_only(self):
+    def test_create_api_interface_is_owner_only(self):
         roles = [
             (None, False),
             (self.regular, False),
@@ -535,6 +531,8 @@ class EducationAuthorizationTests(TestCase):
                 config = response.context["education_config"]
                 self.assertEqual(
                     config["createUrl"],
-                    self.create_ajax_url,
+                    reverse("api:education-list"),
                 )
+                if can_create:
+                    self.assertContains(response, f'action="{reverse("api:education-list")}"')
 # Create your tests here.

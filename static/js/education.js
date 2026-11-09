@@ -57,15 +57,31 @@
         return response.json();
     }
 
-    async function post(url, body) {
+    function errorMessages(value) {
+        if (typeof value === 'string') return [value];
+        if (Array.isArray(value)) return value.flatMap(errorMessages);
+        if (value && typeof value === 'object') return Object.values(value).flatMap(errorMessages);
+        return [];
+    }
+
+    function apiErrorMessage(data, fallback) {
+        return errorMessages(data).join(' ') || fallback;
+    }
+
+    async function writeEducation(url, method, payload) {
         const target = safeUrl(url, true);
         if (!target) throw new Error('Alamat aksi tidak valid.');
         const response = await fetch(target, {
-            method: 'POST',
-            headers: { 'Accept': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            method,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
             credentials: 'same-origin',
-            body,
+            body: payload === undefined ? undefined : JSON.stringify(payload),
         });
+        if (response.status === 204) return { response, data: null };
         const data = await readJson(response);
         return { response, data };
     }
@@ -142,12 +158,12 @@
             star.addEventListener('click', async () => {
                 star.disabled = true;
                 try {
-                    const { response, data } = await post(starUrl);
-                    if (!response.ok) throw new Error(data.message || 'Star gagal diperbarui.');
+                    const { response, data } = await writeEducation(starUrl, 'POST');
+                    if (!response.ok) throw new Error(apiErrorMessage(data, 'Star gagal diperbarui.'));
                     education.star_count = data.star_count;
                     education.is_starred = data.is_starred;
                     setStarButton(star, education);
-                    toast(data.message, 'success');
+                    toast('Star berhasil diperbarui.', 'success');
                 } catch (error) {
                     toast(error.message);
                 } finally {
@@ -216,28 +232,37 @@
             event.preventDefault();
             const submit = addForm.querySelector('[type="submit"]');
             addForm.querySelectorAll('[data-error-field]').forEach(node => { node.textContent = ''; node.hidden = true; });
-            addForm.querySelectorAll('[aria-invalid]').forEach(node => node.removeAttribute('aria-invalid'));
+            addForm.querySelectorAll('[aria-invalid]').forEach(node => {
+                node.removeAttribute('aria-invalid');
+                node.removeAttribute('aria-describedby');
+            });
             submit.disabled = true;
             try {
-                const { response, data } = await post(config.createUrl, new FormData(addForm));
+                const formData = new FormData(addForm);
+                const payload = Object.fromEntries([
+                    'title', 'institution', 'major', 'description', 'thumbnail',
+                    'start_year', 'end_year',
+                ].map(name => [name, formData.get(name)]));
+                // Empty HTML inputs are strings; the API expects null for an ongoing education.
+                if (!payload.end_year) payload.end_year = null;
+                const { response, data } = await writeEducation(config.createUrl, 'POST', payload);
                 if (!response.ok) {
-                    const messages = [];
-                    Object.entries(data.errors || {}).forEach(([name, errors]) => {
-                        const message = errors.map(error => error.message).join(' ');
-                        const output = Array.from(addForm.querySelectorAll('[data-error-field]')).find(node => node.dataset.errorField === name);
+                    Object.entries(data || {}).forEach(([name, errors]) => {
+                        const message = errorMessages(errors).join(' ');
+                        const errorField = name === 'non_field_errors' ? '__all__' : name;
+                        const output = Array.from(addForm.querySelectorAll('[data-error-field]')).find(node => node.dataset.errorField === errorField);
                         if (output) { output.textContent = message; output.hidden = false; }
                         const field = addForm.elements.namedItem(name);
                         if (field) {
                             field.setAttribute('aria-invalid', 'true');
                             if (output) field.setAttribute('aria-describedby', output.id);
                         }
-                        messages.push(message);
                     });
-                    throw new Error(messages.join(' ') || data.message || 'Pendidikan gagal ditambahkan.');
+                    throw new Error(apiErrorMessage(data, 'Pendidikan gagal ditambahkan.'));
                 }
                 addForm.reset();
                 document.getElementById('add-education-modal').hidePopover();
-                toast(data.message, 'success');
+                toast('Pendidikan berhasil ditambahkan!', 'success');
                 // Clear an old search so the newly added record is visible.
                 clearTimeout(debounceTimer);
                 search.value = '';
@@ -256,10 +281,11 @@
             const submit = deleteForm.querySelector('[type="submit"]');
             submit.disabled = true;
             try {
-                const { response, data } = await post(deleteForm.action, new FormData(deleteForm));
-                if (!response.ok) throw new Error(data.message || 'Pendidikan gagal dihapus.');
+                const { response, data } = await writeEducation(deleteForm.action, 'DELETE');
+                if (!response.ok) throw new Error(apiErrorMessage(data, 'Pendidikan gagal dihapus.'));
                 document.getElementById('delete-education-modal').hidePopover();
-                toast(data.message, 'success');
+                toast('Pendidikan berhasil dihapus!', 'success');
+                clearTimeout(debounceTimer);
                 await loadEducations();
             } catch (error) {
                 toast(error.message);

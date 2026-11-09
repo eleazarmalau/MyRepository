@@ -51,15 +51,15 @@ def show_education(request):
         "is_editor": editor,
         "education_config": {
             "listUrl": reverse("api:education-list"),
-            "createUrl": reverse("main:create_education_ajax"),
+            "createUrl": reverse("api:education-list"),
             "updateUrlTemplate": reverse(
                 "main:update_education", args=[education_id_placeholder],
             ) if request.user.is_superuser or editor else None,
             "deleteUrlTemplate": reverse(
-                "main:delete_education", args=[education_id_placeholder],
+                "api:education-detail", args=[education_id_placeholder],
             ) if request.user.is_superuser else None,
             "starUrlTemplate": reverse(
-                "main:toggle_education_star", args=[education_id_placeholder],
+                "api:education-star", args=[education_id_placeholder],
             ) if request.user.is_authenticated else None,
             "loginUrl": reverse("main:login") + "?next=" + reverse("main:show_education"),
             "isAuthenticated": request.user.is_authenticated,

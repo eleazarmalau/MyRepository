@@ -538,6 +538,38 @@ class EducationAPITest(APITestCase):
                 self.assertNotIn("CSRF", str(response.data["detail"]))
                 self.assertEqual(self._education_state(), before)
 
+    def test_page_config_supports_create_star_and_delete_with_session_csrf(self):
+        client = APIClient(enforce_csrf_checks=True)
+        self.assertTrue(client.login(username="education-owner", password="test-password"))
+        page = client.get(reverse("main:show_education"))
+        self.assertEqual(page.status_code, status.HTTP_200_OK)
+        config = page.context["education_config"]
+        token = client.cookies["csrftoken"].value
+        response = client.post(config["createUrl"], {
+            **self.payload, "start_year": "2030", "end_year": None, "thumbnail": "",
+        }, format="json", HTTP_X_CSRFTOKEN=token)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        education = Education.objects.get(pk=response.data["id"])
+        self.assertEqual(education.start_year, 2030)
+        self.assertIsNone(education.end_year)
+        self.assertEqual(education.thumbnail, "")
+        response = client.get(config["listUrl"])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(str(education.pk), [item["id"] for item in response.data])
+
+        placeholder = "00000000-0000-0000-0000-000000000000"
+        star_url = config["starUrlTemplate"].replace(placeholder, str(education.pk))
+        for expected in (True, False):
+            response = client.post(star_url, HTTP_X_CSRFTOKEN=token)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data["is_starred"], expected)
+            self.assertEqual(education.starred_by.filter(pk=self.owner.pk).exists(), expected)
+        delete_url = config["deleteUrlTemplate"].replace(placeholder, str(education.pk))
+        response = client.delete(delete_url, HTTP_X_CSRFTOKEN=token)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.content, b"")
+        self.assertFalse(Education.objects.filter(pk=education.pk).exists())
+
     def _education_state(self):
         # Include the join table so rejected requests cannot silently change stars.
         return (
