@@ -411,3 +411,175 @@ Dalam bagian tampilan, saran awal menempatkan tombol di luar bagian kartu yang b
 Saat menerapkan AJAX Education, muncul error karena template memanggil komponen modal yang belum tersedia di proyek lokal. Saya perlu meminta penjelasan dan kode komponen tersebut secara eksplisit. Karena itu, saya tidak cukup hanya mengikuti satu potongan kode, tetapi perlu memeriksa keterkaitan form, view, URL, template, dan JavaScript.
 
 Saya juga membedakan laporan pengujian AI dari hasil pengujian pada proyek lokal. Tes yang dilaporkan lulus oleh AI tidak otomatis membuktikan bahwa seluruh tampilan, modal, dan interaksi sudah berjalan sesuai kebutuhan saya di browser.
+
+# Assignment 6
+
+### Progres:
+
+Contoh pembagian progres per commit berdasarkan implementasi yang sudah dikerjakan.
+
+Commit 1: Add EducationSerializer and input validation
+
+Yang dikerjakan:
+
+- Menambahkan `EducationSerializer` berbasis `ModelSerializer` di `main/serializers.py`, dengan daftar `fields` yang ditentukan secara eksplisit.
+- Menambahkan `star_count` dan `is_starred` sebagai computed fields yang hanya bisa dibaca, tanpa membuka identitas akun pemberi star.
+- Menetapkan `id`, `created_at`, dan `updated_at` sebagai field yang hanya bisa dibaca.
+- Membersihkan judul, institusi, jurusan, dan deskripsi menggunakan `strip_tags()` serta menolak teks wajib yang kosong setelah dibersihkan.
+- Memvalidasi URL gambar agar menggunakan HTTP atau HTTPS, serta memastikan tahun selesai tidak mendahului tahun mulai.
+- Memperhitungkan nilai tahun yang tersimpan ketika `PATCH` hanya mengirim salah satu tahun, dan tetap memperbolehkan `end_year` bernilai `null`.
+- Menambahkan pengujian serializer untuk validasi, informasi star, dan pencegahan perubahan field yang hanya bisa dibaca.
+
+Commit 2: Add Education REST API endpoints and role permissions
+
+Yang dikerjakan:
+
+- Menambahkan function-based API views `education_list`, `education_detail`, dan `education_star` di `main/api_views.py` menggunakan `@api_view`, `SessionAuthentication`, dan `Response`.
+- Mendaftarkan endpoint `/api/v1/education/`, `/api/v1/education/<uuid>/`, dan `/api/v1/education/<uuid>/star/` di `main/api_urls.py` dengan nama URL yang unik.
+- Menggunakan permission `IsPortfolioOwnerOrEditorOrReadOnly` yang sudah tersedia untuk membatasi tambah dan hapus bagi Owner, serta update bagi Owner dan Editor.
+- Menggunakan `IsAuthenticated` pada endpoint star dan mengambil akun pemberi star dari `request.user`.
+- Menambahkan pencarian melalui query parameter `title`, mempertahankan urutan pendidikan yang masih berlangsung terlebih dahulu, dan menggunakan `prefetch_related("starred_by")`.
+- Mengembalikan status `201` untuk tambah, `400` untuk input tidak valid, `403` untuk penolakan akses, `404` untuk data tidak ditemukan, serta `204` setelah hapus.
+
+Commit 3: Test Education API roles, validation, and CSRF protection
+
+Yang dikerjakan:
+
+- Menambahkan dan memperkuat `EducationAPITest` di `main/tests_api.py` untuk menguji akses Pengunjung, Pengguna Biasa, Editor, dan Owner.
+- Memastikan Pengunjung dan Pengguna Biasa tidak dapat mengubah data, Editor dapat melakukan `PUT` dan `PATCH` tetapi tidak dapat menambah atau menghapus, serta Owner dapat melakukan seluruh CRUD.
+- Memeriksa isi tabel Education dan relasi star setelah request ditolak agar penolakan tidak hanya dibuktikan dari status HTTP.
+- Menguji pencarian, urutan data, validasi input, UUID yang tidak ditemukan, dan metode HTTP yang tidak didukung.
+- Menguji star/unstar, penolakan star bagi Pengunjung, pemisahan status star antar akun, serta perlindungan terhadap pemalsuan field star melalui payload.
+- Menggunakan `APIClient(enforce_csrf_checks=True)` dan `.login()` untuk membuktikan request tanpa CSRF ditolak serta request dengan CSRF yang valid tetap mengikuti aturan role.
+- Mempertahankan pengujian API Projects dari Tutorial 07, termasuk penolakan update Projects bagi Editor.
+
+Commit 4: Load and search Education through the REST API
+
+Yang dikerjakan:
+
+- Mengubah `listUrl` pada konfigurasi `show_education()` agar menunjuk ke endpoint `api:education-list`.
+- Menyesuaikan renderer di `static/js/education.js` untuk membaca respons JSON datar seperti `id`, `title`, dan `institution`, menggantikan pembacaan `item.pk` dan `item.fields`.
+- Menyiapkan template URL aksi melalui konfigurasi halaman sesuai role karena respons serializer tidak menyertakan `item.urls`.
+- Mempertahankan pencarian melalui `fetch()`, debounce 350 ms, pembatalan request sebelumnya, dan pemeriksaan respons yang terlambat.
+- Mempertahankan loading state, empty state, error state, tombol Coba lagi, serta urutan data dari API.
+- Menggunakan `createElement` dan `textContent` untuk menampilkan teks, serta memeriksa URL sebelum digunakan.
+- Menyesuaikan pengujian halaman agar memeriksa endpoint daftar yang baru, pencarian, dan konfigurasi URL aksi sesuai role.
+
+Commit 5: Create, star, and delete Education through the REST API
+
+Yang dikerjakan:
+
+- Mengarahkan konfigurasi endpoint tambah, star, dan hapus pada halaman Education ke API DRF.
+- Mengubah form Tambah Education agar mengirim `POST` dengan payload JSON, serta mengubah tahun selesai yang kosong menjadi `null`.
+- Mengirim star/unstar menggunakan `POST` dan memperbarui jumlah serta status star pada tombol tanpa reload halaman.
+- Mengubah aksi hapus menjadi `DELETE` dan menangani respons kosong `204` tanpa memanggil `response.json()`.
+- Menambahkan helper `writeEducation()` untuk mengirim request dengan `X-CSRFToken`, header JSON, dan kredensial sesi dari origin yang sama.
+- Menampilkan pesan error API melalui toast serta pesan validasi pada field form, dan memperbarui daftar setelah tambah atau hapus berhasil.
+- Menambahkan pengujian alur tambah, star/unstar, dan hapus menggunakan endpoint dari konfigurasi halaman dengan login sesi serta CSRF yang valid.
+
+Commit 6: Add Education edit modal using PATCH
+
+Yang dikerjakan:
+
+- Menambahkan `templates/components/education_edit_modal.html` dan menampilkannya hanya untuk Owner serta Editor.
+- Menyiapkan `edit_form` di `show_education()` dengan ID input yang berbeda dari form tambah agar kedua modal dapat digunakan pada halaman yang sama.
+- Mengubah tombol Update menjadi tombol pembuka modal, lalu mengisi form dengan data Education yang sedang ditampilkan.
+- Mengarahkan URL update ke endpoint detail API dan menyimpan perubahan menggunakan `PATCH` dengan CSRF token.
+- Menggunakan helper bersama untuk menyusun payload, membersihkan error lama, dan menampilkan error validasi pada form tambah maupun edit.
+- Mempertahankan input ketika penyimpanan gagal, menampilkan error melalui toast dan pesan per field, serta menonaktifkan tombol simpan selama request berlangsung.
+- Menutup modal dan memperbarui daftar tanpa reload setelah berhasil, dengan tetap mempertahankan pencarian yang aktif.
+- Menyesuaikan CSS penanda field tidak valid serta menambahkan pengujian visibilitas modal, keunikan ID input, dan update melalui konfigurasi halaman untuk Owner serta Editor.
+
+## Questions
+
+1. Explain what REST means and why returning JSON alone isn’t enough to call an API RESTful. Also explain the difference between PUT and PATCH, with an example of when each should be used.
+
+REST adalah gaya arsitektur yang mengatur cara client dan server berinteraksi dengan resource, contohnya /api/v1/education/1/ mengidentifikasi satu data Education. Client dapat membaca data itu dengan GET atau mengubahnya dengan PATCH. JSON adalah salah satu format untuk merepresentasikan data tersebut. Sebuah API yang mengembalikan JSON belum tentu RESTful karena REST juga mengatur cara resource diidentifikasi, bagaimana client berinteraksi dengannya melalui antarmuka yang konsisten, dan bagaimana setiap request dapat dipahami secara mandiri (stateless).
+
+Kemudian PUT digunakan untuk pembaruan penuh, seperti saat form edit mengirim seluruh data Education yang dapat diubah, seperti institution, major, description, duration, dan thumbnail.
+
+Sementara PATCH itu untuk pembaruan yang sebagian doang, seperti saat pengguna hanya ingin mengganti satu bagian dalam education itu kayak mengganti jurusan doang misalkan, client kemudian cukup mengirim {"major": "Industrial Engineering"} dan field lainnya tetap sama.
+
+2. Explain the role of a serializer in Django REST Framework. What are its advantages over manually assembling a dictionary with JsonResponse as in Tutorial 05?
+
+Serializer bekerja saat membaca data untuk mengubah objek menjadi tipe data Python sederhana yang dapat dirender sebagai JSON dan saat menerima data dari client serializer akan memeriksa tipe data, field wajib, dan aturan validasi melalui is_valid().
+
+Advantagesnya adalah kalau untuk field keluaran dan validasi input itu bisa dipakai ulang di endpoint list, detail, create, dan update dibandingkan JsonResponse yang semuanya masih harus ditulis sendiri. Serializer juga bisa membuat field hasil perhitung seperti star_count sebagai read-only dan mengembalikan pesan validasi per field agar frontend tahu bagian mana yang perlu diperbaiki.
+
+3. Explain the difference between authentication and authorization in Django REST Framework. Why must access rights be checked with a permission class on the server, rather than only by hiding a button in the template?
+
+Authentication di Django REST framework itu menjawab siapa yang mengirim request, dengan SessionAuthentication, DRF memakai sesi login Django untuk mengenali pengguna melalui request.user.
+
+Sementara Authorization menjawab apa yang boleh dilakukan usernya, seperti di API Education dimana editor boleh mengedit data dengan PATCH sedangkan hak menghapus data masih di superuser.
+
+Menyembunyikan tombol Delete hanya mengatur apa yang muncul di halaman. Editor masih bisa mengirim request DELETE langsung lewat browser atau Postman. Karena itu, permission class harus memeriksa role dan metode HTTP di server. Jika Editor mengirim DELETE, API harus mengembalikan 403 Forbidden sebelum data dihapus.
+
+4. Explain why requests that change data still need a CSRF token when an API uses SessionAuthentication. Why isn’t a test using force_authenticate enough to prove that CSRF protection works?
+
+Browser dapat menyertakan cookie sesi secara otomatis ketika mengirim request ke situs tempat pengguna sudah login. Hal ini bisa dimanfaatkan oleh situs lain untuk memicu request atas nama pengguna. Karena itu, untuk request POST, PUT, PATCH, dan DELETE dari pengguna yang terautentikasi melalui sesi, DRF juga memeriksa token CSRF.
+
+force_authenticate() langsung menetapkan pengguna sebagai terautentikasi sehingga proses SessionAuthentication, termasuk pemeriksaan CSRF-nya, dilewati. Untuk menguji CSRF itu bisa menggunakan APIClient(enforce_csrf_checks=True), lalu panggil .login() dengan akun yang memang berhak melakukan aksi tersebut. Tes harus memastikan API mengembalikan 403 dan data tetap sama. Memakai Editor untuk tes ini membantu memastikan request ditolak karena CSRF, sebab Editor memang punya izin untuk mengedit.
+
+## AI Disclosure
+
+**1. Cakupan Penggunaan AI dan Strategi Prompt**
+
+Alat AI yang digunakan adalah: **Codex (OpenAI), melalui percakapan yang terhubung ke proyek di IDE.**
+
+**Prompt Strategy:** Saya memberikan PDF Individual Assignment 6 dan meminta AI membaca ketentuannya serta memeriksa kode proyek yang sudah ada sebelum melakukan perubahan. Pada awalnya, saya hanya meminta daftar pekerjaan dan breakdown pengerjaan yang aman. AI mengidentifikasi Education sebagai section yang perlu dikembangkan dengan DRF karena section tersebut sudah digunakan pada Assignment 3–5, sementara API Projects sudah tersedia dari Tutorial 07.
+
+Setelah mendapatkan breakdown, saya meminta implementasi secara bertahap dengan memilih bagian tertentu dari jawaban sebelumnya. Urutannya mencakup serializer, API views dan URL, pengujian backend, pemuatan data dan pencarian, aksi tambah/star/hapus, lalu modal edit melalui `PATCH`. Saya meminta setiap perubahan mengikuti pola kode yang sudah ada dan menegaskan bahwa pembuatan commit saya urus sendiri.
+
+Bantuan AI mencakup penulisan kode secara langsung pada proyek, penyusunan dan penguatan tes, menjalankan pemeriksaan, serta penyusunan dokumentasi progres dan AI disclosure. Bagian yang dibantu meliputi `main/serializers.py`, `main/api_views.py`, `main/api_urls.py`, konfigurasi halaman di `main/views.py`, `static/js/education.js`, template modal, CSS penanda validasi, `main/tests.py`, dan `main/tests_api.py`. Implementasi menggunakan permission Owner/Editor yang sudah tersedia dan mempertahankan aturan API Projects dari tutorial.
+
+**Beberapa contoh prompt dan ringkasan jawaban:**
+
+**Prompt:** “Kalo mau ngerjain tugas assignment ini kira-kira apa yang harus aku kerjain di kode aku sekarang ini? Kasih tahu aja dulu harus apa aja dan juga bikin breakdown pengerjaannya gimana biar aman”
+
+**Jawaban:** AI membaca PDF dan memeriksa kode tanpa langsung mengubahnya. AI menjelaskan bagian yang sudah tersedia, seperti DRF, API Projects, model Education, dan relasi star, lalu membagi pekerjaan menjadi serializer, endpoint API, pengujian, integrasi frontend, modal edit, serta dokumentasi. AI juga menekankan bahwa implementasi Assignment 6 diterapkan pada Education dan aturan Projects dari tutorial tetap dipertahankan.
+
+**Prompt:** “oke coba kerjakan dan tambahkan sesuai dengan aturan pdfnya dan juga sesuai dengan cara kerja kodenya sekaragn” — dengan memilih bagian pembuatan `EducationSerializer`.
+
+**Jawaban:** AI menambahkan serializer dengan daftar field eksplisit, computed fields `star_count` dan `is_starred`, pembersihan teks menggunakan `strip_tags()`, validasi URL, serta validasi urutan tahun. Untuk `PATCH`, validasi memperhitungkan nilai tahun yang tersimpan ketika hanya salah satu tahun dikirim. AI juga menambahkan tes serializer.
+
+**Prompt:** “oke sekarang kerjakan ini juga sesuai dengan kode yang sudah diimplementasikan dan jangan sampai ada yang salah” — dengan memilih bagian view dan URL API Education.
+
+**Jawaban:** AI menambahkan endpoint list, detail, dan star menggunakan function-based views, `SessionAuthentication`, dan `Response`. Endpoint CRUD memakai permission Owner/Editor yang sudah ada, sedangkan endpoint star menggunakan `IsAuthenticated` dan `request.user`. AI juga menambahkan tes akses role, pencarian, validasi, status respons, dan CSRF.
+
+**Prompt:** “oke sekarang coba kerjakan dan implementasikan kodenya dengan baik dan benar dan tidak boleh ada yang salah, jangan ada bikin commit sendiri gw yang urusin commitnya” — dengan memilih bagian pengujian backend.
+
+**Jawaban:** AI mengaudit tes yang sudah dibuat, lalu memperkuat pemeriksaan isi tabel Education dan relasi star setelah request ditolak. AI menambahkan pengujian pemisahan star antar akun, perlindungan field star dari payload, pembatasan akun staff tanpa grup Editor, serta login sesi nyata dengan CSRF untuk Editor dan Pengguna Biasa. AI mengikuti arahan untuk tidak membuat commit.
+
+**Prompt:** “coba kerjakan bagian ini dengan implementasiin kodenya” — dengan memilih bagian pemuatan data dan pencarian melalui API baru.
+
+**Jawaban:** AI mengubah konfigurasi halaman agar mengambil daftar dari `/api/v1/education/`, kemudian menyesuaikan renderer dengan respons JSON datar. AI mempertahankan debounce 350 ms, pembatalan request, loading/empty/error state, retry, serta penggunaan `textContent`. Karena serializer tidak mengirim URL aksi, AI menyiapkan template URL melalui konfigurasi halaman sesuai role.
+
+**Prompt:** “itu private/tmp apa itu? emang disuruh kah ? aman gak?”
+
+**Jawaban:** AI menjelaskan bahwa file JavaScript di `/private/tmp` dibuat sebagai alat bantu sementara untuk simulasi halaman dan data contoh. File tersebut bukan persyaratan PDF, tidak menjadi dependency aplikasi, dan tidak masuk repository. AI juga menjelaskan bahwa simulasi tersebut belum menggantikan pemeriksaan langsung di browser.
+
+**Prompt:** “coba kerjakan dengan benar bagian ini juga, sesuai dengan implementasi kode yang sudah ada” — dengan memilih bagian tambah, star, dan hapus melalui API.
+
+**Jawaban:** AI mengubah tambah dan star menjadi `POST` ke API DRF, serta hapus menjadi `DELETE`. AI membuat helper request dengan header `X-CSRFToken`, menyesuaikan pesan error DRF untuk toast dan validasi per field, mengubah tahun selesai kosong menjadi `null`, serta menangani respons hapus `204` tanpa membaca JSON. Tampilan diperbarui tanpa reload halaman.
+
+**Prompt:** “oke sekarang kerjain yang ini dan kerjakan dengan benar dan sesuai dengan implementasinya ya” — dengan memilih bagian modal edit melalui `PATCH`.
+
+**Jawaban:** AI menambahkan modal edit untuk Owner dan Editor, mengisi form dari data Education yang sedang ditampilkan, serta menyimpan perubahan melalui `PATCH`. Form tambah dan edit menggunakan ID input berbeda. AI juga menambahkan penanganan error, mempertahankan input saat penyimpanan gagal, dan menguji pembatasan akses serta CSRF.
+
+**Prompt:** “Coba dari masing-masing kerjaan tersebut bikin contoh progres kayak yang ada di README untuk bagian progres di assignment 5, dan bikin per bagian commit”
+
+**Jawaban:** AI menambahkan contoh progres Assignment 6 dalam enam kelompok commit dengan format judul dan daftar “Yang dikerjakan”, mengikuti dokumentasi Assignment 5. Pembagian tersebut mencakup serializer, endpoint API, tes backend, baca/pencarian, tambah/star/hapus, dan modal edit.
+
+**Pengujian yang dibantu AI:** Pada akhir implementasi modal edit, AI menjalankan tes `main` melalui `.venv` dan melaporkan 67 tes Django lulus, termasuk tes Projects dari tutorial. AI juga menjalankan simulasi JavaScript untuk memeriksa rendering, request, CSRF header, pesan error, serta perilaku form. Pemeriksaan JavaScript menggunakan simulasi DOM, sehingga hasilnya belum membuktikan tampilan dan interaksi yang sebenarnya di browser.
+
+**Link Share Chat:** Belum dicantumkan; tautan percakapan ini perlu ditambahkan setelah tersedia.
+
+**2. Pengkritisan Terhadap AI**
+
+Saya meminta AI memulai dari pemeriksaan ketentuan dan kode yang sudah ada, kemudian mengerjakan setiap bagian secara bertahap. Cara ini membantu saya meninjau cakupan perubahan dan memastikan bahwa API Education mengikuti role Assignment 4 serta tetap sesuai dengan struktur proyek. Bantuan AI pada tugas ini mencakup implementasi kode dan pengujian secara langsung, sehingga pemakaiannya perlu dijelaskan secara terbuka.
+
+Saya juga mempertanyakan file pengujian sementara di `/private/tmp` karena file tersebut muncul di luar folder proyek dan tidak disebutkan dalam PDF. Penjelasan AI membantu membedakan file aplikasi, tes dalam repository, dan alat pemeriksaan sementara. Hal ini menunjukkan bahwa tindakan tambahan dari AI tetap perlu diperiksa tujuan dan dampaknya terhadap proyek.
+
+Permintaan saya agar implementasi tidak memiliki kesalahan tidak berarti hasil AI otomatis bebas bug. Tes backend yang lulus hanya membuktikan skenario yang diuji. Simulasi JavaScript juga memiliki keterbatasan karena menggunakan pengganti DOM dan respons jaringan, sehingga tampilan modal, perilaku browser, dan pengalaman pengguna masih perlu diperiksa langsung.
+
+Saya memberikan arahan mengenai urutan pengerjaan, kesesuaian dengan kode yang sudah ada, dan larangan membuat commit secara otomatis. Riwayat commit dan pengumpulan tugas tetap saya kelola sendiri. Contoh progres dari AI perlu disesuaikan dengan perubahan yang benar-benar masuk pada setiap commit.
