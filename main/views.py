@@ -48,12 +48,14 @@ def show_education(request):
         "name": "Isybal Sama Eleazar Malau",
         "title_query": request.GET.get("title", "").strip(),
         "form": EducationForm() if request.user.is_superuser else None,
+        "edit_form": EducationForm(auto_id="education-edit-%s")
+        if request.user.is_superuser or editor else None,
         "is_editor": editor,
         "education_config": {
             "listUrl": reverse("api:education-list"),
             "createUrl": reverse("api:education-list"),
             "updateUrlTemplate": reverse(
-                "main:update_education", args=[education_id_placeholder],
+                "api:education-detail", args=[education_id_placeholder],
             ) if request.user.is_superuser or editor else None,
             "deleteUrlTemplate": reverse(
                 "api:education-detail", args=[education_id_placeholder],

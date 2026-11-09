@@ -37,6 +37,9 @@
     {% include 'components/education_form_modal.html' %}
     {% include 'components/education_ajax_delete_modal.html' %}
 {% endif %}
+{% if user.is_superuser or is_editor %}
+    {% include 'components/education_edit_modal.html' %}
+{% endif %}
 {{ education_config|json_script:'education-config' }}
 <script src="{% static 'js/education.js' %}" defer></script>
 {% endblock content %}

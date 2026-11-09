@@ -483,7 +483,7 @@ class EducationAuthorizationTests(TestCase):
                 self.assertEqual(page.status_code, 200)
                 config = page.context["education_config"]
                 for key, allowed, route in (
-                    ("updateUrlTemplate", can_update, "main:update_education"),
+                    ("updateUrlTemplate", can_update, "api:education-detail"),
                     ("deleteUrlTemplate", can_delete, "api:education-detail"),
                     ("starUrlTemplate", can_star, "api:education-star"),
                 ):
@@ -496,6 +496,29 @@ class EducationAuthorizationTests(TestCase):
                         )
                     else:
                         self.assertIsNone(config[key])
+
+    def test_edit_modal_is_available_only_to_owner_and_editor(self):
+        for user, can_edit in (
+            (None, False), (self.regular, False), (self.editor, True), (self.owner, True),
+        ):
+            with self.subTest(user=user):
+                self.client.logout()
+                if user:
+                    self.client.force_login(user)
+                page = self.client.get(self.list_url)
+                self.assertEqual(page.status_code, 200)
+                html = page.content.decode()
+                self.assertEqual('id="education-edit-form"' in html, can_edit)
+                self.assertEqual('id="edit-education-modal"' in html, can_edit)
+                if can_edit:
+                    self.assertTemplateUsed(page, "components/education_edit_modal.html")
+                    for field in page.context["edit_form"]:
+                        self.assertContains(page, f'id="{field.id_for_label}"', count=1)
+                    if user.is_superuser:
+                        for field in page.context["form"]:
+                            self.assertContains(page, f'id="{field.id_for_label}"', count=1)
+                else:
+                    self.assertIsNone(page.context["edit_form"])
 
     def test_create_api_interface_is_owner_only(self):
         roles = [

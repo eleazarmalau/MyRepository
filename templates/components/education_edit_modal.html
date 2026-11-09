@@ -1,0 +1,27 @@
+<div id="edit-education-modal" class="project-form-modal" popover="auto" role="dialog"
+     aria-labelledby="edit-education-title">
+    <button type="button" class="project-form-modal__backdrop" popovertarget="edit-education-modal"
+            popovertargetaction="hide" aria-label="Tutup form"></button>
+    <div class="project-form-modal__content">
+        <button type="button" class="project-form-modal__close" popovertarget="edit-education-modal"
+                popovertargetaction="hide" aria-label="Tutup form">×</button>
+        <h2 id="edit-education-title">Edit Education</h2>
+        <form id="education-edit-form" method="post" class="project-form">
+            {% csrf_token %}
+            <p class="form-error" data-error-field="__all__" role="alert" hidden></p>
+            {% for field in edit_form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                <p id="education-edit-error-{{ field.name }}" class="form-error"
+                   data-error-field="{{ field.name }}" hidden></p>
+            </div>
+            {% endfor %}
+            <div class="project-form-modal__actions">
+                <button type="button" class="button button-secondary" popovertarget="edit-education-modal"
+                        popovertargetaction="hide">Batal</button>
+                <button type="submit" class="button">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -570,6 +570,46 @@ class EducationAPITest(APITestCase):
         self.assertEqual(response.content, b"")
         self.assertFalse(Education.objects.filter(pk=education.pk).exists())
 
+    def test_page_edit_endpoint_accepts_owner_and_editor_session_patch(self):
+        self.education.starred_by.add(self.regular)
+        for user in (self.owner, self.editor):
+            with self.subTest(user=user):
+                client = APIClient(enforce_csrf_checks=True)
+                self.assertTrue(client.login(username=user.username, password="test-password"))
+                page = client.get(reverse("main:show_education"))
+                self.assertEqual(page.status_code, status.HTTP_200_OK)
+                config = page.context["education_config"]
+                token = client.cookies["csrftoken"].value
+                update_url = config["updateUrlTemplate"].replace(
+                    "00000000-0000-0000-0000-000000000000", str(self.education.pk),
+                )
+                before = self._education_state()
+                response = client.patch(update_url, self.payload, format="json")
+                self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+                self.assertEqual(self._education_state(), before)
+                response = client.patch(update_url, {
+                    **self.payload, "end_year": "2020",
+                }, format="json", HTTP_X_CSRFTOKEN=token)
+                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+                self.assertIn("end_year", response.data)
+                self.assertEqual(self._education_state(), before)
+
+                title = f"Edited by {user.username}"
+                response = client.patch(update_url, {
+                    **self.payload, "title": f"<b>{title}</b>",
+                    "start_year": "2030", "end_year": None, "thumbnail": "",
+                }, format="json", HTTP_X_CSRFTOKEN=token)
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                self.education.refresh_from_db()
+                self.assertEqual(self.education.title, title)
+                self.assertEqual(self.education.start_year, 2030)
+                self.assertIsNone(self.education.end_year)
+                self.assertEqual(list(self.education.starred_by.all()), [self.regular])
+                self.assertEqual(Education.objects.count(), 1)
+                response = client.get(config["listUrl"])
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                self.assertEqual(response.data[0]["title"], title)
+
     def _education_state(self):
         # Include the join table so rejected requests cannot silently change stars.
         return (

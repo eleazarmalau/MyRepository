@@ -1260,7 +1260,8 @@ a:focus-visible{
     opacity: 0.6;
     cursor: wait;
 }
-#education-form [aria-invalid="true"] { border-color: #a33131; }
+#education-form [aria-invalid="true"],
+#education-edit-form [aria-invalid="true"] { border-color: #a33131; }
 
 @media (max-width: 600px) {
     .project-form-modal {

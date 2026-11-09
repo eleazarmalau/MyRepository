@@ -8,7 +8,11 @@
     const stateText = document.getElementById('education-state-text');
     const retry = document.getElementById('education-retry');
     const addForm = document.getElementById('education-form');
+    const editForm = document.getElementById('education-edit-form');
     const deleteForm = document.getElementById('education-delete-form');
+    const educationFields = [
+        'title', 'institution', 'major', 'description', 'thumbnail', 'start_year', 'end_year',
+    ];
     let controller;
     let debounceTimer;
     let latestRequest = 0;
@@ -66,6 +70,42 @@
 
     function apiErrorMessage(data, fallback) {
         return errorMessages(data).join(' ') || fallback;
+    }
+
+    function clearFormErrors(form) {
+        form.querySelectorAll('[data-error-field]').forEach(node => {
+            node.textContent = '';
+            node.hidden = true;
+        });
+        form.querySelectorAll('[aria-invalid]').forEach(node => {
+            node.removeAttribute('aria-invalid');
+            node.removeAttribute('aria-describedby');
+        });
+    }
+
+    function showFormErrors(form, data) {
+        Object.entries(data || {}).forEach(([name, errors]) => {
+            const errorField = name === 'non_field_errors' ? '__all__' : name;
+            const output = Array.from(form.querySelectorAll('[data-error-field]'))
+                .find(node => node.dataset.errorField === errorField);
+            if (output) {
+                output.textContent = errorMessages(errors).join(' ');
+                output.hidden = false;
+            }
+            const field = form.elements.namedItem(name);
+            if (field) {
+                field.setAttribute('aria-invalid', 'true');
+                if (output) field.setAttribute('aria-describedby', output.id);
+            }
+        });
+    }
+
+    function educationPayload(form) {
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(educationFields.map(name => [name, formData.get(name)]));
+        // Empty HTML inputs are strings; the API expects null for an ongoing education.
+        if (!payload.end_year) payload.end_year = null;
+        return payload;
     }
 
     async function writeEducation(url, method, payload) {
@@ -134,9 +174,21 @@
         body.append(details);
         const actions = element('div', 'education-card-actions');
         const updateUrl = educationActionUrl(config.updateUrlTemplate, education.id);
-        if (updateUrl) {
-            const update = element('a', 'button education-update-button', 'Update');
-            update.href = updateUrl;
+        if (updateUrl && editForm) {
+            const update = element('button', 'button education-update-button', 'Update');
+            update.type = 'button';
+            update.setAttribute('aria-haspopup', 'dialog');
+            update.setAttribute('aria-controls', 'edit-education-modal');
+            update.addEventListener('click', () => {
+                if (editForm.querySelector('[type="submit"]').disabled) return;
+                clearFormErrors(editForm);
+                educationFields.forEach(name => {
+                    editForm.elements.namedItem(name).value = education[name] ?? '';
+                });
+                editForm.action = updateUrl;
+                document.getElementById('edit-education-modal').showPopover();
+                editForm.elements.namedItem('title').focus();
+            });
             actions.append(update);
         }
         const deleteUrl = educationActionUrl(config.deleteUrlTemplate, education.id);
@@ -231,33 +283,13 @@
         addForm.addEventListener('submit', async event => {
             event.preventDefault();
             const submit = addForm.querySelector('[type="submit"]');
-            addForm.querySelectorAll('[data-error-field]').forEach(node => { node.textContent = ''; node.hidden = true; });
-            addForm.querySelectorAll('[aria-invalid]').forEach(node => {
-                node.removeAttribute('aria-invalid');
-                node.removeAttribute('aria-describedby');
-            });
+            if (submit.disabled) return;
+            clearFormErrors(addForm);
             submit.disabled = true;
             try {
-                const formData = new FormData(addForm);
-                const payload = Object.fromEntries([
-                    'title', 'institution', 'major', 'description', 'thumbnail',
-                    'start_year', 'end_year',
-                ].map(name => [name, formData.get(name)]));
-                // Empty HTML inputs are strings; the API expects null for an ongoing education.
-                if (!payload.end_year) payload.end_year = null;
-                const { response, data } = await writeEducation(config.createUrl, 'POST', payload);
+                const { response, data } = await writeEducation(config.createUrl, 'POST', educationPayload(addForm));
                 if (!response.ok) {
-                    Object.entries(data || {}).forEach(([name, errors]) => {
-                        const message = errorMessages(errors).join(' ');
-                        const errorField = name === 'non_field_errors' ? '__all__' : name;
-                        const output = Array.from(addForm.querySelectorAll('[data-error-field]')).find(node => node.dataset.errorField === errorField);
-                        if (output) { output.textContent = message; output.hidden = false; }
-                        const field = addForm.elements.namedItem(name);
-                        if (field) {
-                            field.setAttribute('aria-invalid', 'true');
-                            if (output) field.setAttribute('aria-describedby', output.id);
-                        }
-                    });
+                    showFormErrors(addForm, data);
                     throw new Error(apiErrorMessage(data, 'Pendidikan gagal ditambahkan.'));
                 }
                 addForm.reset();
@@ -266,6 +298,32 @@
                 // Clear an old search so the newly added record is visible.
                 clearTimeout(debounceTimer);
                 search.value = '';
+                await loadEducations();
+            } catch (error) {
+                toast(error.message);
+            } finally {
+                submit.disabled = false;
+            }
+        });
+    }
+
+    if (editForm) {
+        editForm.addEventListener('submit', async event => {
+            event.preventDefault();
+            const submit = editForm.querySelector('[type="submit"]');
+            if (submit.disabled) return;
+            clearFormErrors(editForm);
+            submit.disabled = true;
+            try {
+                const { response, data } = await writeEducation(editForm.action, 'PATCH', educationPayload(editForm));
+                if (!response.ok) {
+                    showFormErrors(editForm, data);
+                    throw new Error(apiErrorMessage(data, 'Pendidikan gagal diperbarui.'));
+                }
+                document.getElementById('edit-education-modal').hidePopover();
+                editForm.reset();
+                toast('Pendidikan berhasil diperbarui!', 'success');
+                clearTimeout(debounceTimer);
                 await loadEducations();
             } catch (error) {
                 toast(error.message);
