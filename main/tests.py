@@ -78,16 +78,23 @@ class EducationViewTests(TestCase):
         self.assertTemplateUsed(response, "education.html")
         self.assertContains(response, 'id="education-list"')
         self.assertContains(response, "js/education.js")
+        self.assertEqual(
+            response.context["education_config"]["listUrl"],
+            reverse("api:education-list"),
+        )
+        self.assertIn("csrftoken", self.client.cookies)
 
     def test_education_model_data_appears_in_api(self):
-        response = self.client.get(reverse("main:get_educations_json"))
+        response = self.client.get(reverse("api:education-list"))
 
         self.assertEqual(response.status_code, 200)
 
         items = response.json()
         self.assertEqual(len(items), 1)
 
-        fields = items[0]["fields"]
+        fields = items[0]
+        self.assertEqual(fields["id"], str(self.education.pk))
+        self.assertNotIn("fields", fields)
         self.assertEqual(fields["title"], self.education.title)
         self.assertEqual(fields["institution"], self.education.institution)
         self.assertEqual(fields["major"], self.education.major)
@@ -100,11 +107,22 @@ class EducationViewTests(TestCase):
         Education.objects.all().delete()
 
         response = self.client.get(
-            reverse("main:get_educations_json")
+            reverse("api:education-list")
         )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), [])
+
+    def test_page_search_query_works_with_configured_api(self):
+        page = self.client.get(reverse("main:show_education"), {"title": "  INFORMATION  "})
+        self.assertEqual(page.status_code, 200)
+        self.assertContains(page, 'value="INFORMATION"')
+        response = self.client.get(
+            page.context["education_config"]["listUrl"],
+            {"title": page.context["title_query"]},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([item["id"] for item in response.json()], [str(self.education.pk)])
 
 class EducationAuthorizationTests(TestCase):
     @classmethod
@@ -453,6 +471,35 @@ class EducationAuthorizationTests(TestCase):
                 self.assertEqual("delete" in urls, can_delete,)
                 self.assertEqual("star" in urls, can_star,)
 
+
+    def test_page_action_templates_follow_user_role(self):
+        for user, can_update, can_delete, can_star in (
+            (None, False, False, False),
+            (self.regular, False, False, True),
+            (self.editor, True, False, True),
+            (self.owner, True, True, True),
+        ):
+            with self.subTest(user=user):
+                self.client.logout()
+                if user:
+                    self.client.force_login(user)
+                page = self.client.get(self.list_url)
+                self.assertEqual(page.status_code, 200)
+                config = page.context["education_config"]
+                for key, allowed, route in (
+                    ("updateUrlTemplate", can_update, "main:update_education"),
+                    ("deleteUrlTemplate", can_delete, "main:delete_education"),
+                    ("starUrlTemplate", can_star, "main:toggle_education_star"),
+                ):
+                    if allowed:
+                        self.assertEqual(
+                            config[key].replace(
+                                "00000000-0000-0000-0000-000000000000", str(self.education.pk),
+                            ),
+                            reverse(route, args=[self.education.pk]),
+                        )
+                    else:
+                        self.assertIsNone(config[key])
 
     def test_create_ajax_interface_is_owner_only(self):
         roles = [

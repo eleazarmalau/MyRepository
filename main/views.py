@@ -42,14 +42,25 @@ def show_experience(request):
 @ensure_csrf_cookie
 def show_education(request):
     # Render only the skeleton. The browser fetches the Education records.
+    editor = is_editor(request.user)
+    education_id_placeholder = "00000000-0000-0000-0000-000000000000"
     context = {
         "name": "Isybal Sama Eleazar Malau",
         "title_query": request.GET.get("title", "").strip(),
         "form": EducationForm() if request.user.is_superuser else None,
-        "is_editor": is_editor(request.user),
+        "is_editor": editor,
         "education_config": {
-            "listUrl": reverse("main:get_educations_json"),
+            "listUrl": reverse("api:education-list"),
             "createUrl": reverse("main:create_education_ajax"),
+            "updateUrlTemplate": reverse(
+                "main:update_education", args=[education_id_placeholder],
+            ) if request.user.is_superuser or editor else None,
+            "deleteUrlTemplate": reverse(
+                "main:delete_education", args=[education_id_placeholder],
+            ) if request.user.is_superuser else None,
+            "starUrlTemplate": reverse(
+                "main:toggle_education_star", args=[education_id_placeholder],
+            ) if request.user.is_authenticated else None,
             "loginUrl": reverse("main:login") + "?next=" + reverse("main:show_education"),
             "isAuthenticated": request.user.is_authenticated,
         },
